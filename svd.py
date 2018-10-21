@@ -13,7 +13,10 @@ class SVD():
     concept space.
     '''
     ################# Member Variables #################
+    #Training and Valdiation dataset
     data_matrix=None
+    validation_matrix=None
+    #SVD attributes
     sigma_vector=None
     sigma2_vector=None
     U_matrix=None
@@ -31,7 +34,7 @@ class SVD():
         '''
         #Loading the data matrix into the memory
         print ("Loading the data matrix")
-        self.data_matrix=load_rating_matrix(filepath)
+        self.data_matrix,self.validation_matrix=load_rating_matrix(filepath)
 
         #Loading the svd decomposition into memory if present
         try:
@@ -46,7 +49,6 @@ class SVD():
             #Now saving the current SVD to the dataset directory
             print ("Saving the SVD Decomposition in dataset directory")
             self._save_svd_decomposition(filepath)
-
 
     def generate_svd(self):
         '''
@@ -137,7 +139,7 @@ class SVD():
         self.U_matrix=load_dict['U_matrix']
         self.V_matrix=load_dict['V_matrix']
 
-    #def
+    #def _set
 if __name__=='__main__':
     filepath='ml-1m/'
     svd=SVD(filepath)
