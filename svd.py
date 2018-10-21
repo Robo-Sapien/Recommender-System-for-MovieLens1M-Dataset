@@ -16,7 +16,7 @@ class SVD():
     #Training and Valdiation dataset
     data_matrix=None
     validation_matrix=None
-    #SVD attributes
+    #SVD attributes CAUTION:(they are in ascending order)
     sigma_vector=None
     sigma2_vector=None
     U_matrix=None
@@ -139,10 +139,44 @@ class SVD():
         self.U_matrix=load_dict['U_matrix']
         self.V_matrix=load_dict['V_matrix']
 
-    #def _set
+    def _set_90percent_energy_mode(self):
+        '''
+        This function will update the eigen vectors and the eigen
+        value matrices to reatin the energy only upto 90%.
+        In other words this will keep the concept space to enough
+        size to retain 90% of varaiance.
+        '''
+        #Getting the energy vector, i.e the lamdas
+        energy=self.sigma2_vector
+        total_energy=np.sum(energy)
+
+        #Starting to find start index leaving all previous eigen values
+        start_index=0
+        for i in range(energy.shape[0]):
+            #Calculating the remaining after leaving the current energy
+            energy_left=total_energy-energy[i]
+
+            #Increamenting the leaving pointer
+            if (energy_left/total_energy>=0.98):
+                start_index+=1
+            else:
+                break
+
+        #Now removing the insignificant energy and corresponding eigen vectors
+        self.sigma_vector=self.sigma_vector[start_index:,]
+        self.sigma2_vector=self.sigma2_vector[start_index:,]
+        self.U_matrix=self.U_matrix[start_index:,:]
+        self.V_matrix=self.V_matrix[start_index:,:]
+
 if __name__=='__main__':
     filepath='ml-1m/'
     svd=SVD(filepath)
     sigma_vector=svd.sigma_vector
+    print sigma_vector.shape
+    for i in range(sigma_vector.shape[0]):
+        print sigma_vector[i]
+    svd._set_90percent_energy_mode()
+    sigma_vector=svd.sigma_vector
+    print sigma_vector.shape
     for i in range(sigma_vector.shape[0]):
         print sigma_vector[i]
