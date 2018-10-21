@@ -59,12 +59,14 @@ class SVD():
             update the U,Sigma,V member elemets of the SVD object.
         '''
         #Getting the data matrix
-        data_matrix=self.data_matrix
+        data_matrix=(self.data_matrix).astype(np.float64)
 
         #Getting the U matrix
         #Making a symmetric matrix which is positive semidefinite
         print ("Creating the U decomposition")
         aat=np.dot(data_matrix,data_matrix.T)
+        #aat=aat.astype(np.float64)
+
         print ("Getting the eigen value decomposition")
         eval,evecU=self._get_eigen_vectors(aat)
         self.U_matrix=evecU
@@ -72,12 +74,13 @@ class SVD():
         #Getting the sigma matrix from the eigen value
         print ("Creating the Sigma Diagonal Matrix")
         self.sigma2_vector=eval
-        sigma=np.sqrt(eval)
+        sigma=np.sqrt(np.abs(eval))
         self.sigma_vector=sigma #np.diag(sigma)
 
         #Getting the other symmetric matrix for V
         print ("Creating the V decomposition")
         ata=np.dot(data_matrix.T,data_matrix)
+        #ata=ata.astype(np.float64)
         print ("Getting the eigen value decomposition")
         _,evecV=self._get_eigen_vectors(ata)
         self.V_matrix=evecV
