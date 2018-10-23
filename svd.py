@@ -97,24 +97,39 @@ class SVD():
         print ("Creating the U decomposition")
         aat=np.dot(data_matrix,data_matrix.T)
         #aat=aat.astype(np.float64)
-
         print ("Getting the eigen value decomposition")
-        eval,evecU=self._get_eigen_vectors(aat)
+        evalU,evecU=self._get_eigen_vectors(aat)
         self.U_matrix=evecU
-
-        #Getting the sigma matrix from the eigen value
-        print ("Creating the Sigma Diagonal Matrix")
-        self.sigma2_vector=eval
-        sigma=np.sqrt(np.abs(eval))
-        self.sigma_vector=sigma #np.diag(sigma)
 
         #Getting the other symmetric matrix for V
         print ("Creating the V decomposition")
         ata=np.dot(data_matrix.T,data_matrix)
         #ata=ata.astype(np.float64)
         print ("Getting the eigen value decomposition")
-        _,evecV=self._get_eigen_vectors(ata)
+        evalV,evecV=self._get_eigen_vectors(ata)
         self.V_matrix=evecV
+
+        #Removing the zero eigen values since both aat and ata
+        #will have same eigen value (larger oneses has extra zeros)
+        size=None
+        eval=None
+        if(evalU.shape[0]>evalV.shape[0]):
+            #Defining the eigen value matrix
+            size=evalV.shape[0]
+            eval=evalV
+            #Removing the trivial eigen vectors from U
+            self.U_matrix=self.U_matrix[:,-size:]
+        else:
+            size=evalU.shape[0]
+            eval=evalU
+            #Removing the trivial (zero) eigen vectors) from V
+            self.V_matrix=self.V_matrix[:,-size,:]
+
+        #Getting the sigma matrix from the eigen value
+        print ("Creating the Sigma Diagonal Matrix")
+        self.sigma2_vector=eval
+        sigma=np.sqrt(np.abs(eval))
+        self.sigma_vector=sigma #np.diag(sigma)
 
     def _get_eigen_vectors(self,K):
         '''
