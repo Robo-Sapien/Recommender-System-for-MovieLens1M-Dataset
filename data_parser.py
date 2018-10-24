@@ -34,8 +34,8 @@ def generate_rating_matrix(filepath,filename='ratings.dat',valid_freq=100):
             movieid=int(fields[1])
             rating=int(fields[2])
 
-            print "{}: Filling user {}:movie {}:rating {}".format(count,
-                                                userid,movieid,rating)
+            print ("{}: Filling user {}:movie {}:rating {}".format(count,
+                                                userid,movieid,rating))
             if count%valid_freq==0:
                 valid_example=(userid-1,movieid-1,rating)
                 validation_list.append(valid_example)

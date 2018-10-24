@@ -172,11 +172,11 @@ if __name__=='__main__':
     filepath='ml-1m/'
     svd=SVD(filepath)
     sigma_vector=svd.sigma_vector
-    print sigma_vector.shape
+    print (sigma_vector.shape)
     for i in range(sigma_vector.shape[0]):
-        print sigma_vector[i]
+        print (sigma_vector[i])
     svd._set_90percent_energy_mode()
     sigma_vector=svd.sigma_vector
-    print sigma_vector.shape
+    print (sigma_vector.shape)
     for i in range(sigma_vector.shape[0]):
-        print sigma_vector[i]
+        print (sigma_vector[i])
