@@ -68,7 +68,7 @@ class SVD():
         the rating vector of each user to bring their rating to same scale
         '''
         #Casting the dataset to floating point precision from uint8
-        self.data_matrix=np.array([[3,2,2],[2,3,-2]])
+        #self.data_matrix=np.array([[3,2,2],[2,3,-2]])
         self.data_matrix=(self.data_matrix).astype(np.float64)
 
         #Now calculationg the mean and varaince of each user rating
@@ -117,11 +117,6 @@ class SVD():
 
         #Removing the zero eigen values since both aat and ata
         #will have same eigen value (larger oneses has extra zeros)
-        print evalU
-        print evalV
-        print evecU
-        print evecV
-        print self.data_matrix
         size=None
         eval=None
         if(evalU.shape[0]>evalV.shape[0]):
@@ -129,11 +124,13 @@ class SVD():
             size=evalV.shape[0]
             eval=evalV
             #Removing the trivial eigen vectors from U
+            #Resizing the matrix
             self.U_matrix=self.U_matrix[:,-size:]
         else:
             size=evalU.shape[0]
             eval=evalU
             #Removing the trivial (zero) eigen vectors) from V
+            #Resizing the V_matrix
             self.V_matrix=self.V_matrix[:,-size:]
 
         #Getting the sigma matrix from the eigen value
@@ -141,6 +138,9 @@ class SVD():
         self.sigma2_vector=eval
         sigma=np.sqrt(np.abs(eval))
         self.sigma_vector=sigma #np.diag(sigma)
+
+        #Now filling the U_matrix compatible with the decomposition
+        self._make_U_compatible_again()
 
     def create_reconstruction(self,mode=None):
         '''
@@ -180,6 +180,17 @@ class SVD():
         eval,evec=np.linalg.eigh(K)
 
         return eval,evec
+
+    def _make_U_compatible_again(self):
+        '''
+        This function will be used internally to make the U matrix
+        compatible with the overall decomposition since we will
+        be having the eigen vecotrs with the ambiguous sign
+        so, getting the U and V vectors separately will create problem
+        '''
+        print ("Making U matrix compatible again")
+        self.U_matrix=np.dot(self.data_matrix,self.V_matrix)
+        self.U_matrix=self.U_matrix/self.sigma_vector.reshape((1,-1))
 
     def _save_svd_decomposition(self,filepath):
         '''
@@ -356,7 +367,7 @@ if __name__=='__main__':
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction()
-    # print 'vaid:',svd.get_validation_error()
+    print 'vaid:',svd.get_validation_error()
     print 'recon:',svd.get_rmse_reconstruction_error()
 
 
