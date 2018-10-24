@@ -22,6 +22,9 @@ class SVD():
     U_matrix=None
     V_matrix=None
     svd_filename='svd_decomposition.npz'
+    #Additional attributes for prediction phase
+    user_mean_vec=None      #Will keep the mean rating of user
+    user_var_vec=None       #will kepp the variance in the user rating
 
     ################# Member Functions #################
     def __init__(self,filepath):
@@ -35,6 +38,9 @@ class SVD():
         #Loading the data matrix into the memory
         print ("Loading the data matrix")
         self.data_matrix,self.validation_matrix=load_rating_matrix(filepath)
+        #Normalizing the dataset before use
+        print ("Normalizing the dataset")
+        self.normalize_dataset()
 
         #Loading the svd decomposition into memory if present
         try:
@@ -50,6 +56,29 @@ class SVD():
             print ("Saving the SVD Decomposition in dataset directory")
             self._save_svd_decomposition(filepath)
 
+    def normalize_dataset(self):
+        '''
+        (THINK/TUNABLE)
+        This function will normalize the dataset to make the non rated
+        movies unbiased.(using the mean subtraction from rated movie)
+        Also, to counter the high and low raters problem we have to normalize
+        the rating vector of each user to bring their rating to same scale
+        '''
+        #Casting the dataset to floating point precision from uint8
+        self.data_matrix=(self.data_matrix).astype(np.float64)
+
+        #Now calculationg the mean and varaince of each user rating
+        self.user_mean_vec=np.mean(self.data_matrix,axis=1,keepdims=True)
+        self.user_var_vec=np.var(self.data_matrix,axis=1,keepdims=True)
+
+        #Now normalizing the data/rating-matrix
+        #Subtracting the mean
+        mask=(self.data_matrix!=0)
+        masked_mean=mask*self.user_mean_vec #element wise broadcasted along user
+        self.data_matrix=self.data_matrix-masked_mean
+        #Diving with the varaince to brong every rating to same scale
+        self.data_matrix=self.data_matrix/self.user_var_vec #element-broad user
+
     def generate_svd(self):
         '''
         This function will generate the eigen value decomposition
@@ -60,7 +89,7 @@ class SVD():
             to create a SVD decomposition. This will automatically
             update the U,Sigma,V member elemets of the SVD object.
         '''
-        #Getting the data matrix
+        #Getting the data matrix (keep it here for safety)
         data_matrix=(self.data_matrix).astype(np.float64)
 
         #Getting the U matrix
@@ -68,24 +97,39 @@ class SVD():
         print ("Creating the U decomposition")
         aat=np.dot(data_matrix,data_matrix.T)
         #aat=aat.astype(np.float64)
-
         print ("Getting the eigen value decomposition")
-        eval,evecU=self._get_eigen_vectors(aat)
+        evalU,evecU=self._get_eigen_vectors(aat)
         self.U_matrix=evecU
-
-        #Getting the sigma matrix from the eigen value
-        print ("Creating the Sigma Diagonal Matrix")
-        self.sigma2_vector=eval
-        sigma=np.sqrt(np.abs(eval))
-        self.sigma_vector=sigma #np.diag(sigma)
 
         #Getting the other symmetric matrix for V
         print ("Creating the V decomposition")
         ata=np.dot(data_matrix.T,data_matrix)
         #ata=ata.astype(np.float64)
         print ("Getting the eigen value decomposition")
-        _,evecV=self._get_eigen_vectors(ata)
+        evalV,evecV=self._get_eigen_vectors(ata)
         self.V_matrix=evecV
+
+        #Removing the zero eigen values since both aat and ata
+        #will have same eigen value (larger oneses has extra zeros)
+        size=None
+        eval=None
+        if(evalU.shape[0]>evalV.shape[0]):
+            #Defining the eigen value matrix
+            size=evalV.shape[0]
+            eval=evalV
+            #Removing the trivial eigen vectors from U
+            self.U_matrix=self.U_matrix[:,-size:]
+        else:
+            size=evalU.shape[0]
+            eval=evalU
+            #Removing the trivial (zero) eigen vectors) from V
+            self.V_matrix=self.V_matrix[:,-size,:]
+
+        #Getting the sigma matrix from the eigen value
+        print ("Creating the Sigma Diagonal Matrix")
+        self.sigma2_vector=eval
+        sigma=np.sqrt(np.abs(eval))
+        self.sigma_vector=sigma #np.diag(sigma)
 
     def _get_eigen_vectors(self,K):
         '''
@@ -147,6 +191,7 @@ class SVD():
         size to retain 90% of varaiance.
         '''
         #Getting the energy vector, i.e the lamdas
+        print ("Starting the 90 percent energy mode")
         energy=self.sigma2_vector
         total_energy=np.sum(energy)
 
@@ -168,15 +213,52 @@ class SVD():
         self.U_matrix=self.U_matrix[start_index:,:]
         self.V_matrix=self.V_matrix[start_index:,:]
 
+        print ("90 percent Energy mode on")
+
+    def make_prediction(self,userid,movieid):
+        '''
+        This function will make the prediction given the movieid and
+        the userid by projecting the movie into the concept space
+        and taking the cosine similarity of user personality
+        in the same-concept space
+        USAGE:
+            INPUT:
+                userid  : the userid for which we have to make
+                            recommendation.
+                movieid : the movie for which we have to make the
+                            prediction for the user.
+            OUPUT:
+                similarity : the cosine similarity of user and movie.
+                            rescale it to appropriate rating scale
+                            before calculating when using
+        '''
+        #Extracting the user-projection in concept space (eigen movie)
+        user_vector=self.U_matrix[userid-1,:]
+        movie_vector=self.V_matrix[movieid-1,:]
+        print self.U_matrix.shape
+        print self.V_matrix.shape
+
+        #Now Checking the similarity of user and movie
+        mod_user=user_vector*user_vector
+        mod_movie=movie_vector*movie_vector
+
+        similarity=(user_vector*movie_vector)/(mod_user*mod_movie)
+
+        return similarity
+
 if __name__=='__main__':
     filepath='ml-1m/'
     svd=SVD(filepath)
-    sigma_vector=svd.sigma_vector
-    print (sigma_vector.shape)
-    for i in range(sigma_vector.shape[0]):
-        print (sigma_vector[i])
-    svd._set_90percent_energy_mode()
-    sigma_vector=svd.sigma_vector
-    print (sigma_vector.shape)
-    for i in range(sigma_vector.shape[0]):
-        print (sigma_vector[i])
+    print svd.U_matrix.shape
+    print svd.V_matrix.shape
+    print svd.sigma_vector.shape
+    # sigma_vector=svd.sigma_vector
+    # print sigma_vector.shape
+    # for i in range(sigma_vector.shape[0]):
+    #     print sigma_vector[i]
+    # svd._set_90percent_energy_mode()
+    # sigma_vector=svd.sigma_vector
+    # print sigma_vector.shape
+    # for i in range(sigma_vector.shape[0]):
+    #     print sigma_vector[i]
+    # svd.make_prediction(1,1193)
