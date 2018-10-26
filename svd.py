@@ -332,7 +332,7 @@ class SVD():
 
         return rmse_val
 
-    def get_validation_error(self):
+    def get_validation_error_correlation(self):
         '''
         This function will calculate the validation set error,
         by comparing the prediction made by the reconstructed matrix
@@ -341,33 +341,37 @@ class SVD():
             OUTPUT:
                 rmse_val    : the root mean squared error value.
         '''
-        rmse_val=0
+        squared_diff=0
 
         #Iterating over the validation examples
         N=self.validation_matrix.shape[0]
         for i in range(N):
             #Taking out the user and movie id
-            user_id=self.validation_matrix[i,0]-1
-            movie_id=self.validation_matrix[i,1]-1
+            user_id=self.validation_matrix[i,0]
+            movie_id=self.validation_matrix[i,1]
 
             rating_diff =   self.validation_matrix[i,2]-\
                         self.reconstructed_matrix[user_id,movie_id],
             rating_diff=np.squeeze(rating_diff)
 
             #Printing for interactiveness
-            print ("actual:{} prediction:{} diff:{}".format(
-                self.validation_matrix[i,2],#actual rating
-                self.reconstructed_matrix[user_id,movie_id],
-                rating_diff,
-            ))
+            if i%100==0:
+                print ("actual:{} prediction:{} diff:{}".format(
+                    self.validation_matrix[i,2],#actual rating
+                    self.reconstructed_matrix[user_id,movie_id],
+                    rating_diff,
+                ))
 
             #Storing the squared error
-            rmse_val+=(rating_diff**2)
+            squared_diff+=(rating_diff**2)
 
         #Taking the mean value of squared error
-        rmse_val=(rmse_val/N)**(0.5)
+        rmse_val=(squared_diff/N)**(0.5)
 
-        return rmse_val
+        #Finding the spearman correlation
+        pearson_coefficient=1-6*squared_diff/(N*(N*N-1))
+
+        return rmse_val,pearson_coefficient
 
 if __name__=='__main__':
     #Creating the svd object
@@ -384,12 +388,12 @@ if __name__=='__main__':
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction(mode)
-    print(svd.get_validation_error(),'<----vaidError')
-    print(svd.get_rmse_reconstruction_error(),'<----trainError')
+    print svd.get_validation_error_correlation(),'<----vaidError'
+    print svd.get_rmse_reconstruction_error(),'<----trainError'
 
 
     # #Reconstruction with 90% eneergy left
-    # svd._set_90percent_energy_mode(keep_energy=0.90)
-    # svd.create_reconstruction(mode)
-    # print 'vaid:',svd.get_validation_error()
-    # print 'recon:',svd.get_rmse_reconstruction_error()
+    svd._set_90percent_energy_mode(keep_energy=0.90)
+    svd.create_reconstruction(mode)
+    print 'vaid:',svd.get_validation_error_correlation()
+    print 'recon:',svd.get_rmse_reconstruction_error()

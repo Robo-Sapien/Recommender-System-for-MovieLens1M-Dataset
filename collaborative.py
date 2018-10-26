@@ -3,10 +3,13 @@ from data_parser import *
 from scipy import spatial
 from operator import itemgetter
 from array import *
+from collaborative_baseline import *
 
 neighbourhood_size = 2
 
 def find_similarity_scores(movie1_ratinglist, movie2_ratinglist):
+	movie1_ratinglist=np.asarray(movie1_ratinglist)
+	movie2_ratinglist=np.asarray(movie2_ratinglist)
 	N1 = np.count_nonzero(movie1_ratinglist)
 	N2 = np.count_nonzero(movie2_ratinglist)
 
@@ -25,15 +28,22 @@ def find_similarity_scores(movie1_ratinglist, movie2_ratinglist):
 
 
 
-def predict_rating(user_id, movie_id,rating_matrix):
+def predict_rating(user_id, movie_id,rating_matrix,flag):
 	movie_list_for_userid = rating_matrix[user_id,:]
 
 	non_zero_ratings_indices_tuple = np.nonzero(movie_list_for_userid)
 	non_zero_ratings_indices_array =  non_zero_ratings_indices_tuple[0]
 	non_zero_ratings = movie_list_for_userid[non_zero_ratings_indices_tuple]
 	non_zero_ratings = [value for value in non_zero_ratings]
-	#print(type(non_zero_ratings))
-	#print(non_zero_ratings)
+
+
+	if(flag==1):
+		local_baseline_list = []
+		for index in non_zero_ratings_indices_array:
+			local_baseline = find_baseline(user_id,index,rating_matrix)
+			local_baseline_list.append(local_baseline)
+		local_baseline_list = np.asarray(local_baseline_list)
+		non_zero_ratings = np.subtract(non_zero_ratings,local_baseline_list)
 
 	similarityScore_list=[]
 	temp=[]
@@ -44,12 +54,6 @@ def predict_rating(user_id, movie_id,rating_matrix):
 		movie1_ratinglist = rating_matrix[:,movie_id]
 		score = find_similarity_scores(movie1_ratinglist, movie2_ratinglist)
 		similarityScore_list.append(score)
-	'''
-	temp.append(similarityScore_list)
-	temp.append(non_zero_ratings)
-	#print(temp)
-	temp=sorted(temp ,key=itemgetter(0), reverse=True)
-	'''
 
 	d = dict((key, value) for (key, value) in zip(similarityScore_list,non_zero_ratings))
 	#print(d)
@@ -67,8 +71,8 @@ def predict_rating(user_id, movie_id,rating_matrix):
 	return predictedRating
 
 def weighted_avg(top_similarityScore_list, neighbourhoodRating_list):
-	np.asarray(top_similarityScore_list)
-	np.asarray(neighbourhoodRating_list)
+	top_similarityScore_list = np.asarray(top_similarityScore_list)
+	neighbourhoodRating_list = np.asarray(neighbourhoodRating_list)
 	numerator = np.sum(np.multiply(top_similarityScore_list, neighbourhoodRating_list))
 	denominator =  np.sum(top_similarityScore_list)
 
@@ -82,6 +86,6 @@ if __name__=='__main__':
     filepath='ml-1m/'
     rating_matrix,validation_matrix = load_rating_matrix(filepath)
   
-    predictedRating = predict_rating(6039,1640,rating_matrix)
+    predictedRating = predict_rating(0,1192,rating_matrix,0)
     print(predictedRating)
     #print(validation_matrix)
