@@ -3,7 +3,9 @@ from data_parser import *
 from scipy import spatial
 from array import *
 
-from collaborative import *
+#from collaborative import *
+
+
 
 def find_baseline(user_id, movie_id, rating_matrix):
 	N_rating_matrix = np.count_nonzero(rating_matrix)
@@ -21,13 +23,7 @@ def find_baseline(user_id, movie_id, rating_matrix):
 
 	return baseline
 
-def predict_baseline_rating(user_id, movie_id, rating_matrix):
-	global_baseline_estimate = find_baseline(user_id,movie_id,rating_matrix)
-	local_baseline_estimate = predict_rating(user_id,movie_id,rating_matrix,1)
 
-	combined_rating = global_baseline_estimate + local_baseline_estimate
-
-	return combined_rating
 
 
 if __name__=='__main__':
