@@ -7,9 +7,33 @@ from array import *
 
 neighbourhood_size = 2
 
-def find_similarity_scores(movie1_ratinglist, movie2_ratinglist):
-	movie1_ratinglist=np.asarray(movie1_ratinglist)
-	movie2_ratinglist=np.asarray(movie2_ratinglist)
+def generate_similarity_matrix(rating_matrix,filepath,filename):
+	'''
+	This function will generate the similarity matrix between
+	all the movie to movie pair.
+	'''
+	#Initializing the relationship matrix
+	num_movies=rating_matrix.shape[1]
+	sim_mat=np.zeros((num_movies,num_movies),dtype=np.float64)
+
+	for movie1 in range(num_movies):
+		for movie2 in range(movie1+1,num_movies):
+			print ("Finding the similarity for {}--{}".format(movie1,movie2))
+			sim_mat[movie1,movie2]=find_similarity_scores(movie1,
+														  movie2,
+														rating_matrix)
+			sim_mat[movie2,movie1]=sim_mat[movie1,movie2]
+
+	#Saving the matrix
+	filename=filepath+filename
+	np.savez_compressed(filename,movie_sim_matrix=sim_mat)
+
+	return sim_mat
+
+def find_similarity_scores(movie1_id, movie2_id,rating_matrix):
+	movie1_ratinglist=rating_matrix[:,movie1_id]
+	movie2_ratinglist=rating_matrix[:,movie2_id]
+
 	N1 = np.count_nonzero(movie1_ratinglist)
 	N2 = np.count_nonzero(movie2_ratinglist)
 
@@ -42,7 +66,7 @@ def weighted_avg(top_similarityScore_list, neighbourhoodRating_list):
 if __name__=='__main__':
     filepath='ml-1m/'
     rating_matrix,validation_matrix = load_rating_matrix(filepath)
-  
+
     predictedRating = predict_rating(0,1192,rating_matrix,0)
     print(predictedRating)
     #print(validation_matrix)
