@@ -71,33 +71,33 @@ class CUR():
         for c in range(data_matrix.shape[1]):
             ColumnProb.append(np.sum(np.square(data_matrix[:,c]))/denominator)
         chosenColumns = np.random.choice(data_matrix.shape[1], math.floor(0.9*data_matrix.shape[1]), False, ColumnProb)
-        C = np.zeros(shape=(data_matrix.shape[0],chosenColumns.shape[0]))
+        C_matrix = np.zeros(shape=(data_matrix.shape[0],chosenColumns.shape[0]))
         i = 0
         for col in chosenColumns:
-            C[:,i] = data_matrix[:,col] / math.sqrt(chosenColumns.shape[0] * ColumnProb[col])
+            C_matrix[:,i] = data_matrix[:,col] / math.sqrt(chosenColumns.shape[0] * ColumnProb[col])
             i += 1
 
         RowProb = []
         for r in range(data_matrix.shape[0]):
             RowProb.append(np.sum(np.square(data_matrix[r,:]))/denominator)
         chosenRows = np.random.choice(data_matrix.shape[0], math.floor(0.9*data_matrix.shape[0]), False, RowProb)
-        R = np.zeros(shape=(chosenRows.shape[0],data_matrix.shape[1]))
+        R_matrix = np.zeros(shape=(chosenRows.shape[0],data_matrix.shape[1]))
         i = 0
         for row in chosenRows:
-            R[i,:] = data_matrix[row,:] / math.sqrt(chosenRows.shape[0] * RowProb[row])
+            R_matrix[i,:] = data_matrix[row,:] / math.sqrt(chosenRows.shape[0] * RowProb[row])
             i += 1
 
         W = np.zeros(shape=(chosenRows.shape[0], chosenColumns.shape[0]))
         for i in range(chosenRows.shape[0]):
             for j in range(chosenColumns.shape[0]):
                 W[i][j] = data_matrix[chosenRows[i]][chosenColumns[j]]
-        svd=SVD(W)
+        svd=SVD(None, None, 'no_normalize', 'CUR', W)
         Zplus = np.diag(1/svd.sigma_vector)
         Wplus = svd.V_matrix.dot(Zplus.dot(svd.U_matrix.T))
-        print(svd.U_matrix.T.shape)
-        print(Zplus.shape)
-        print(svd.V_matrix.shape)
-        print(Wplus.shape)
+
+        reconstructed_matrix = C_matrix.dot(Wplus.dot(R_matrix))
+        print(reconstructed_matrix.shape)
+        
 
 
 if __name__=='__main__':

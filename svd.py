@@ -22,14 +22,13 @@ class SVD():
     sigma2_vector=None
     U_matrix=None
     V_matrix=None
-    svd_filename=''
     #Additional attributes for reconstruction phase
     user_mean_vec=None      #Will keep the mean rating of user
     user_var_vec=None       #will kepp the variance in the user rating
                             #this is usually standard deviation
 
     ################# Member Functions #################
-    def __init__(self,filepath,filename,mode):
+    def __init__(self,filepath,filename,mode,useMode,CUR_Matrix=None):
         '''
         Here we will initialize the svd class by loading the data
         and initializing other variables.
@@ -41,7 +40,10 @@ class SVD():
         '''
         #Loading the data matrix into the memory
         print ("Loading the data matrix")
-        self.data_matrix,self.validation_matrix=load_rating_matrix(filepath)
+        if useMode == 'CUR':
+            self.data_matrix = CUR_Matrix
+        else:
+            self.data_matrix,self.validation_matrix=load_rating_matrix(filepath)
         #Normalizing the dataset before use
         print ("Normalizing the dataset")
         self.normalize_dataset(mode)
@@ -57,8 +59,9 @@ class SVD():
             self.generate_svd()
             print ("SVD Generation completed")
             #Now saving the current SVD to the dataset directory
-            print ("Saving the SVD Decomposition in dataset directory")
-            self._save_svd_decomposition(filepath,filename)
+            if useMode == 'svd':
+                print ("Saving the SVD Decomposition in dataset directory")
+                self._save_svd_decomposition(filepath,filename)
 
     def normalize_dataset(self,mode):
         '''
@@ -371,7 +374,7 @@ if __name__=='__main__':
     filepath='ml-1m/'
     mode='normalize'
     filename = 'svd_decomposition.npz'
-    svd=SVD(filepath,filename,mode)
+    svd=SVD(filepath,filename,mode,'svd')
 
     #Checking the size compatibility
     print(svd.data_matrix.shape)
