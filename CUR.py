@@ -245,6 +245,6 @@ if __name__=='__main__':
     cur=CUR(filepath,'')
     print(cur.get_validation_error_correlation())
 
-    print('\n 90% Energy: \n')
+    print('\n90% Energy: \n')
     cur=CUR(filepath,'90-percent')
     print(cur.get_validation_error_correlation())
