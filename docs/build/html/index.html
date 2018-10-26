@@ -1,0 +1,274 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to RecommenderSystem’s documentation! &#8212; RecommenderSystem 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-recommendersystem-s-documentation">
+<h1>Welcome to RecommenderSystem’s documentation!<a class="headerlink" href="#welcome-to-recommendersystem-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="documentation-for-the-code">
+<h2>Documentation for the Code<a class="headerlink" href="#documentation-for-the-code" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+<div class="section" id="recommendersystem-collaborative">
+<h1>RecommenderSystem Collaborative<a class="headerlink" href="#recommendersystem-collaborative" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-collaborative"></span></div>
+<div class="section" id="module-svd">
+<span id="recommendersystem-svd"></span><h1>RecommenderSystem SVD<a class="headerlink" href="#module-svd" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="svd.SVD">
+<em class="property">class </em><code class="descclassname">svd.</code><code class="descname">SVD</code><span class="sig-paren">(</span><em>filepath</em>, <em>filename</em>, <em>mode</em>, <em>useMode</em>, <em>CUR_Matrix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class will provide one place functionality for the
+singular valued decoposition along with other functions for
+making recommndation by projecting the query vector to
+concept space.</p>
+<dl class="method">
+<dt id="svd.SVD.create_reconstruction">
+<code class="descname">create_reconstruction</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.create_reconstruction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.create_reconstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will reconstruct the rating matrix, using the
+decomposed component and also denormalize it to have
+same mean and variance for each user.
+(matching their rating style)
+USAGE:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>INPUT:</dt>
+<dd><dl class="first last docutils">
+<dt>mode <span class="classifier-delimiter">:</span> <span class="classifier">where we have to denormalize the reconstructed</span></dt>
+<dd>matrix usign the mean rating of the user</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="svd.SVD.generate_svd">
+<code class="descname">generate_svd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.generate_svd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.generate_svd" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will generate the eigen value decomposition
+of the data matrix and store it as a member variable.</p>
+<dl class="docutils">
+<dt>USAGE:</dt>
+<dd>Call this function when using for the first time,
+to create a SVD decomposition. This will automatically
+update the U,Sigma,V member elemets of the SVD object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="svd.SVD.get_rmse_reconstruction_error">
+<code class="descname">get_rmse_reconstruction_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.get_rmse_reconstruction_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.get_rmse_reconstruction_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will calculate the root-mean squared error
+of the reconstruction and the actual matrix.
+USAGE:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>OUTPUT:</dt>
+<dd>rmse_val    : the average root mean squared error.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="svd.SVD.get_validation_error_correlation">
+<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will calculate the validation set error,
+by comparing the prediction made by the reconstructed matrix
+and the actal value
+USAGE:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>OUTPUT:</dt>
+<dd>rmse_val    : the root mean squared error value.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="svd.SVD.make_prediction">
+<code class="descname">make_prediction</code><span class="sig-paren">(</span><em>userid</em>, <em>movieid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.make_prediction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.make_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will make the prediction given the movieid and
+the userid by projecting the movie into the concept space
+and taking the cosine similarity of user personality
+in the same-concept space
+USAGE:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>INPUT:</dt>
+<dd><dl class="first last docutils">
+<dt>userid <span class="classifier-delimiter">:</span> <span class="classifier">the userid for which we have to make</span></dt>
+<dd>recommendation.</dd>
+<dt>movieid <span class="classifier-delimiter">:</span> <span class="classifier">the movie for which we have to make the</span></dt>
+<dd>prediction for the user.</dd>
+</dl>
+</dd>
+<dt>OUPUT:</dt>
+<dd><dl class="first last docutils">
+<dt>similarity <span class="classifier-delimiter">:</span> <span class="classifier">the cosine similarity of user and movie.</span></dt>
+<dd>rescale it to appropriate rating scale
+before calculating when using</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="svd.SVD.normalize_dataset">
+<code class="descname">normalize_dataset</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.normalize_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.normalize_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>(THINK/TUNABLE)
+This function will normalize the dataset to make the non rated
+movies unbiased.(using the mean subtraction from rated movie)
+Also, to counter the high and low raters problem we have to normalize
+the rating vector of each user to bring their rating to same scale</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-CUR">
+<span id="recommendersystem-cur"></span><h1>RecommenderSystem CUR<a class="headerlink" href="#module-CUR" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="CUR.CUR">
+<em class="property">class </em><code class="descclassname">CUR.</code><code class="descname">CUR</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class will provide one place functionality for the
+CUR decoposition along with other functions for
+making recommndation by projecting the query vector to
+concept space.</p>
+<dl class="method">
+<dt id="CUR.CUR.generate_cur">
+<code class="descname">generate_cur</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.generate_cur"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.generate_cur" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will generate the C, U and R matrices by
+selecting Columns and rows based on the probabilities</p>
+<dl class="docutils">
+<dt>USAGE:</dt>
+<dd>Call this function when using for the first time,
+to create a CUD decomposition. This will automatically
+update the C,U,R member elemets of the CUR object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="CUR.CUR.get_validation_error_correlation">
+<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will calculate the validation set error,
+by comparing the prediction made by the reconstructed matrix
+and the actal value
+USAGE:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>OUTPUT:</dt>
+<dd>rmse_val    : the root mean squared error value.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="CUR.CUR.normalize_dataset">
+<code class="descname">normalize_dataset</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.normalize_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.normalize_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>(THINK/TUNABLE)
+This function will normalize the dataset to make the non rated
+movies unbiased.(using the mean subtraction from rated movie)
+Also, to counter the high and low raters problem we have to normalize
+the rating vector of each user to bring their rating to same scale</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">RecommenderSystem</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Yashdeep Thorat, Abhinav Kumar, Shivam Bhagat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
