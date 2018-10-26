@@ -26,6 +26,7 @@ class SVD():
     #Additional attributes for reconstruction phase
     user_mean_vec=None      #Will keep the mean rating of user
     user_var_vec=None       #will kepp the variance in the user rating
+                            #this is usually standard deviation
 
     ################# Member Functions #################
     def __init__(self,filepath,mode):
@@ -72,8 +73,19 @@ class SVD():
         self.data_matrix=(self.data_matrix).astype(np.float64)
 
         #Now calculationg the mean and varaince of each user rating
-        self.user_mean_vec=np.mean(self.data_matrix,axis=1,keepdims=True)
-        self.user_var_vec=np.var(self.data_matrix,axis=1,keepdims=True)
+        #Getting the correct mean and variance for normalization
+        non_zero_mask=(self.data_matrix!=0)
+
+        #Calculating the mean
+        num_non_zero=np.sum(non_zero_mask,axis=1,keepdims=True)
+        row_sum=np.sum(self.data_matrix,axis=1,keepdims=True)
+
+        #Creating the mean mask for getting the std of non zero rating per row
+        masked_mean=non_zero_mask*row_sum
+        row_diff=np.sum(np.square(self.data_matrix-masked_mean),axis=1,keepdims=True)
+
+        self.user_mean_vec=row_sum/num_non_zero
+        self.user_var_vec=(row_diff/num_non_zero)**(0.5)
 
         #Now normalizing the data/rating-matrix
         if mode=='normalize':
@@ -142,7 +154,7 @@ class SVD():
         #Now filling the U_matrix compatible with the decomposition
         self._make_U_compatible_again()
 
-    def create_reconstruction(self,mode=None):
+    def create_reconstruction(self,mode):
         '''
         This function will reconstruct the rating matrix, using the
         decomposed component and also denormalize it to have
@@ -305,14 +317,14 @@ class SVD():
         rmse_val=np.mean(np.square(diff))**(0.5)
 
         #Printing the real utility matrix and prediction
-        for i in range(self.data_matrix.shape[0]):
-            for j in range(self.data_matrix.shape[1]):
-                if (self.data_matrix[i,j]==0):
-                    continue
-                print ('actual:{}   prediction:{}    diff:{}'.format(
-                        self.data_matrix[i,j],
-                        self.reconstructed_matrix[i,j],
-                        diff[i,j]))
+        # for i in range(self.data_matrix.shape[0]):
+        #     for j in range(self.data_matrix.shape[1]):
+        #         if (self.data_matrix[i,j]==0):
+        #             continue
+        #         print ('actual:{}   prediction:{}    diff:{}'.format(
+        #                 self.data_matrix[i,j],
+        #                 self.reconstructed_matrix[i,j],
+        #                 diff[i,j]))
 
         return rmse_val
 
@@ -356,7 +368,7 @@ class SVD():
 if __name__=='__main__':
     #Creating the svd object
     filepath='ml-1m/'
-    mode='no_normalize'
+    mode='normalize'
     svd=SVD(filepath,mode)
 
     #Checking the size compatibility
@@ -366,13 +378,13 @@ if __name__=='__main__':
     print svd.sigma_vector.shape
 
     #Recosntructing the svd decomposition
-    svd.create_reconstruction()
-    print 'vaid:',svd.get_validation_error()
-    print 'recon:',svd.get_rmse_reconstruction_error()
+    svd.create_reconstruction(mode)
+    print svd.get_validation_error(),'<----vaidError'
+    print svd.get_rmse_reconstruction_error(),'<----trainError'
 
 
-    #Reconstruction with 90% eneergy left
+    # #Reconstruction with 90% eneergy left
     # svd._set_90percent_energy_mode(keep_energy=0.90)
-    # svd.create_reconstruction()
+    # svd.create_reconstruction(mode)
     # print 'vaid:',svd.get_validation_error()
     # print 'recon:',svd.get_rmse_reconstruction_error()
