@@ -13,21 +13,11 @@ def find_similarity_scores(movie1_ratinglist, movie2_ratinglist):
 	mean1 = np.sum(movie1_ratinglist)*1.0/N1
 	mean2 = np.sum(movie2_ratinglist)*1.0/N2
 
-	centered_movie1_list = []
-	centered_movie2_list = []
+	maskedMean1 = (movie1_ratinglist>0)*mean1
+	maskedMean2 = (movie2_ratinglist>0)*mean2
 
-	for value in movie1_ratinglist:
-		if(value>0):
-			centered_movie1_list.append(value-mean1)
-		else:
-			centered_movie1_list.append(value)
-	for value in movie2_ratinglist:
-		if(value>0):
-			centered_movie2_list.append(value-mean2)
-		else:
-			centered_movie2_list.append(value)
-	#print(centered_movie1_list)
-	#print(centered_movie2_list)
+	centered_movie1_list = movie1_ratinglist - maskedMean1
+	centered_movie2_list = movie2_ratinglist - maskedMean2
 
 	score = 1 - spatial.distance.cosine(centered_movie1_list,centered_movie2_list)
 
@@ -63,6 +53,7 @@ def predict_rating(user_id, movie_id,rating_matrix):
 
 	d = dict((key, value) for (key, value) in zip(similarityScore_list,non_zero_ratings))
 	#print(d)
+	#print(zip(similarityScore_list,non_zero_ratings))
 	key = d.keys()
 	key = sorted(key,reverse=True)
 	values = [d[k] for k in key]
@@ -91,6 +82,6 @@ if __name__=='__main__':
     filepath='ml-1m/'
     rating_matrix,validation_matrix = load_rating_matrix(filepath)
   
-    predictedRating = predict_rating(0,1192,rating_matrix)
+    predictedRating = predict_rating(6039,1640,rating_matrix)
     print(predictedRating)
     #print(validation_matrix)
