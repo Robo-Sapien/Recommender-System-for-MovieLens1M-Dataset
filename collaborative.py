@@ -27,9 +27,6 @@ def find_similarity_scores(movie1_ratinglist, movie2_ratinglist):
 	return score
 
 
-
-
-
 def weighted_avg(top_similarityScore_list, neighbourhoodRating_list):
 	top_similarityScore_list = np.asarray(top_similarityScore_list)
 	neighbourhoodRating_list = np.asarray(neighbourhoodRating_list)
