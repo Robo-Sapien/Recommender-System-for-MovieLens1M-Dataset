@@ -39,7 +39,6 @@ class SVD():
                                 matrix. if load just load the data matrix
         '''
         #Loading the data matrix into the memory
-        print ("Loading the data matrix")
         if useMode == 'CUR':
             self.data_matrix = CUR_Matrix
         else:
@@ -369,9 +368,9 @@ class SVD():
         rmse_val=(squared_diff/N)**(0.5)
 
         #Finding the spearman correlation
-        pearson_coefficient=1-6*squared_diff/(N*(N*N-1))
+        spearman_coefficient=1-6*squared_diff/(N*(N*N-1))
 
-        return rmse_val,pearson_coefficient
+        return rmse_val,spearman_coefficient
 
 if __name__=='__main__':
     #Creating the svd object
@@ -388,12 +387,12 @@ if __name__=='__main__':
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction(mode)
-    print svd.get_validation_error_correlation(),'<----vaidError'
-    print svd.get_rmse_reconstruction_error(),'<----trainError'
+    print(svd.get_validation_error_correlation(),'<----vaidError')
+    print(svd.get_rmse_reconstruction_error(),'<----trainError')
 
 
     # #Reconstruction with 90% eneergy left
     svd._set_90percent_energy_mode(keep_energy=0.90)
     svd.create_reconstruction(mode)
-    print 'vaid:',svd.get_validation_error_correlation()
-    print 'recon:',svd.get_rmse_reconstruction_error()
+    print('vaid:',svd.get_validation_error_correlation())
+    print('recon:',svd.get_rmse_reconstruction_error())
