@@ -385,13 +385,8 @@ if __name__=='__main__':
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction(mode)
-<<<<<<< HEAD
     print svd.get_validation_error_correlation(),'<----vaidError'
     print svd.get_rmse_reconstruction_error(),'<----trainError'
-=======
-    print(svd.get_validation_error(),'<----vaidError')
-    print(svd.get_rmse_reconstruction_error(),'<----trainError')
->>>>>>> 33fbaf4f47be5ee51e1d00e0688ef6710ddb63de
 
 
     # #Reconstruction with 90% eneergy left
