@@ -22,14 +22,14 @@ class SVD():
     sigma2_vector=None
     U_matrix=None
     V_matrix=None
-    svd_filename='svd_decomposition.npz'
+    svd_filename=''
     #Additional attributes for reconstruction phase
     user_mean_vec=None      #Will keep the mean rating of user
     user_var_vec=None       #will kepp the variance in the user rating
                             #this is usually standard deviation
 
     ################# Member Functions #################
-    def __init__(self,filepath,mode):
+    def __init__(self,filepath,filename,mode):
         '''
         Here we will initialize the svd class by loading the data
         and initializing other variables.
@@ -49,7 +49,7 @@ class SVD():
         #Loading the svd decomposition into memory if present
         try:
             print ("Loading the SVD Decomposition data")
-            self._load_svd_decomposition(filepath)
+            self._load_svd_decomposition(filepath,filename)
             print ("Load Successful")
         except:
             print ("\nLoad unsuccessful, generating the SVD decomposition")
@@ -58,7 +58,7 @@ class SVD():
             print ("SVD Generation completed")
             #Now saving the current SVD to the dataset directory
             print ("Saving the SVD Decomposition in dataset directory")
-            self._save_svd_decomposition(filepath)
+            self._save_svd_decomposition(filepath,filename)
 
     def normalize_dataset(self,mode):
         '''
@@ -89,7 +89,7 @@ class SVD():
 
         #Now normalizing the data/rating-matrix
         if mode=='normalize':
-            print 'normalizing the data matrix'
+            print('normalizing the data matrix')
             #Subtracting the mean
             mask=(self.data_matrix!=0)
             masked_mean=mask*self.user_mean_vec #element wise broadcasted along user
@@ -165,7 +165,7 @@ class SVD():
                 mode    : where we have to denormalize the reconstructed
                             matrix usign the mean rating of the user
         '''
-        print "Reconstructing the rating-matrix"
+        print("Reconstructing the rating-matrix")
         #Reconstructing the rating matrix
         recon=np.dot(self.U_matrix,np.diag(self.sigma_vector))
         recon=np.dot(recon,self.V_matrix.T)
@@ -173,7 +173,7 @@ class SVD():
 
         #Since this will be a normalized matrix denormalize it
         if mode=='normalize':
-            print "Renormalizing the rating-matrix"
+            print("Renormalizing the rating-matrix")
             recon=recon*self.user_var_vec+self.user_mean_vec
         self.reconstructed_matrix=recon
 
@@ -204,7 +204,7 @@ class SVD():
         self.U_matrix=np.dot(self.data_matrix,self.V_matrix)
         self.U_matrix=self.U_matrix/self.sigma_vector.reshape((1,-1))
 
-    def _save_svd_decomposition(self,filepath):
+    def _save_svd_decomposition(self,filepath,filename):
         '''
         This fucntion will save the decomposition to the dataset
         directory which can be used later without need to decomp
@@ -213,7 +213,7 @@ class SVD():
             INPUT:
                 filepath    :the filepath of the dataset directory
         '''
-        filename=filepath+self.svd_filename
+        filename = filepath + filename
         np.savez_compressed(filename,
                             U_matrix=self.U_matrix,
                             V_matrix=self.V_matrix,
@@ -223,7 +223,7 @@ class SVD():
         # #No need to store the data matrix now
         # self.data_matrix=None
 
-    def _load_svd_decomposition(self,filepath):
+    def _load_svd_decomposition(self,filepath,filename):
         '''
         This function will load the svd decompoased matrix to the
         member varaibles of the SVD object.
@@ -232,7 +232,7 @@ class SVD():
                 filepath    :the filepath of the dataset directory
         '''
         #Loading the dataset
-        filename=filepath+self.svd_filename
+        filename = filepath + filename
         load_dict=np.load(filename)
 
         #Now assigning them to the member variables
@@ -294,8 +294,8 @@ class SVD():
         #Extracting the user-projection in concept space (eigen movie)
         user_vector=self.U_matrix[userid-1,:]
         movie_vector=self.V_matrix[movieid-1,:]
-        print self.U_matrix.shape
-        print self.V_matrix.shape
+        print(self.U_matrix.shape)
+        print(self.V_matrix.shape)
 
         #Now Checking the similarity of user and movie
         mod_user=user_vector*user_vector
@@ -370,18 +370,19 @@ if __name__=='__main__':
     #Creating the svd object
     filepath='ml-1m/'
     mode='normalize'
-    svd=SVD(filepath,mode)
+    filename = 'svd_decomposition.npz'
+    svd=SVD(filepath,filename,mode)
 
     #Checking the size compatibility
-    print svd.data_matrix.shape
-    print svd.U_matrix.shape
-    print svd.V_matrix.shape
-    print svd.sigma_vector.shape
+    print(svd.data_matrix.shape)
+    print(svd.U_matrix.shape)
+    print(svd.V_matrix.shape)
+    print(svd.sigma_vector.shape)
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction(mode)
-    print svd.get_validation_error(),'<----vaidError'
-    print svd.get_rmse_reconstruction_error(),'<----trainError'
+    print(svd.get_validation_error(),'<----vaidError')
+    print(svd.get_rmse_reconstruction_error(),'<----trainError')
 
 
     # #Reconstruction with 90% eneergy left

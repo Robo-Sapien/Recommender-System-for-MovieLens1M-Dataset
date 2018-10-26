@@ -91,7 +91,6 @@ class CUR():
         for i in range(chosenRows.shape[0]):
             for j in range(chosenColumns.shape[0]):
                 W[i][j] = data_matrix[chosenRows[i]][chosenColumns[j]]
-        # np.savez_compressed('ml-1m/CUR-W.npz', W=W)
         svd=SVD(W)
         Zplus = np.diag(1/svd.sigma_vector)
         Wplus = svd.V_matrix.dot(Zplus.dot(svd.U_matrix.T))
