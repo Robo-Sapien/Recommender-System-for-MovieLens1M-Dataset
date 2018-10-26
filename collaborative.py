@@ -30,12 +30,38 @@ def generate_similarity_matrix(rating_matrix,filepath,filename):
 
 	return sim_mat
 
+def find_baseline_matrix(rating_matrix):
+	#Masking the array
+	non_zero_mask=rating_matrix!=0
+
+	#Finding teh global mean
+	N_rating_matrix = np.count_nonzero(rating_matrix)
+	global_mean = np.sum(rating_matrix)*1.0/N_rating_matrix
+
+	#Calculating the user rating deviation
+	count_x=np.sum(non_zero_mask,axis=1,keepdims=1)
+	mean_x=np.sum(rating_matrix,axis=1,keepdims=True)/count_x - global_mean
+
+	#Calculating the movie rating deviation
+	count_m=np.sum(non_zero_mask,axis=0)
+	mean_m=np.sum(rating_matrix,axis=0,keepdims=True)/count_m - global_mean
+
+	#print (mean_m.shape,mean_x.shape)
+
+	#Creating the baseline matrix
+	dummy_ones=np.ones((rating_matrix.shape),dtype=np.float64)
+	baseline_matrix=mean_x+(dummy_ones*mean_m)+global_mean
+
+	return baseline_matrix
+
 def find_similarity_scores(movie1_id, movie2_id,rating_matrix):
 	movie1_ratinglist=rating_matrix[:,movie1_id]
 	movie2_ratinglist=rating_matrix[:,movie2_id]
 
 	N1 = np.count_nonzero(movie1_ratinglist)
 	N2 = np.count_nonzero(movie2_ratinglist)
+	if(N1==0 or N2==0):
+		return 0
 
 	mean1 = np.sum(movie1_ratinglist)*1.0/N1
 	mean2 = np.sum(movie2_ratinglist)*1.0/N2

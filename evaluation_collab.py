@@ -26,7 +26,12 @@ def Spearman_correlation(predited_rating, actual_rating):
 
 if __name__=='__main__':
 	filepath='ml-1m/'
+	filename='similarity_matrix.npz'
 	rating_matrix,validation_matrix = load_rating_matrix(filepath)
+	movie_sim_matrix = load_sim_matrix(filepath,filename)
+	print ("Calculating the baseline matrix")
+	baseline_matrix=find_baseline_matrix(rating_matrix)
+
 	collab_predicted_list = []
 	collab_baseline_predicted_list = []
 	actual_list = []
@@ -38,11 +43,12 @@ if __name__=='__main__':
 		movie_id = validation_matrix[i,1]
 		actual_list.append(validation_matrix[i,2])
 
-		collab_prediction = predict_rating(user_id, movie_id,rating_matrix,0)
-		print(collab_prediction)
-		print(validation_matrix[i,2])
+		collab_prediction = predict_rating(user_id, movie_id,rating_matrix,movie_sim_matrix,baseline_matrix,0)
+		
 
-		collab_baseline_prediction = predict_baseline_rating(user_id,movie_id,rating_matrix)
+		collab_baseline_prediction = predict_baseline_rating(user_id,movie_id,rating_matrix,movie_sim_matrix,baseline_matrix)
+
+		print(validation_matrix[i,2],collab_prediction,collab_baseline_prediction)
 
 		collab_predicted_list.append(collab_prediction)
 		collab_baseline_predicted_list.append(collab_baseline_prediction)
