@@ -344,8 +344,8 @@ class SVD():
         N=self.validation_matrix.shape[0]
         for i in range(N):
             #Taking out the user and movie id
-            user_id=self.validation_matrix[i,0]-1
-            movie_id=self.validation_matrix[i,1]-1
+            user_id=self.validation_matrix[i,0]
+            movie_id=self.validation_matrix[i,1]
 
             rating_diff =   self.validation_matrix[i,2]-\
                         self.reconstructed_matrix[user_id,movie_id],
