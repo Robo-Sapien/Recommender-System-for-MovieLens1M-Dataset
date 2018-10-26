@@ -1,6 +1,7 @@
 #################### IMPORTING LIBRARIES ################
 import numpy as np
 import math
+from svd import SVD
 np.random.seed(1)
 
 from data_parser import load_rating_matrix
@@ -86,58 +87,19 @@ class CUR():
             R[i,:] = data_matrix[row,:] / math.sqrt(chosenRows.shape[0] * RowProb[row])
             i += 1
 
+        W = np.zeros(shape=(chosenRows.shape[0], chosenColumns.shape[0]))
+        for i in range(chosenRows.shape[0]):
+            for j in range(chosenColumns.shape[0]):
+                W[i][j] = data_matrix[chosenRows[i]][chosenColumns[j]]
+        # np.savez_compressed('ml-1m/CUR-W.npz', W=W)
+        svd=SVD(W)
+        Zplus = np.diag(1/svd.sigma_vector)
+        Wplus = svd.V_matrix.dot(Zplus.dot(svd.U_matrix.T))
+        print(svd.U_matrix.T.shape)
+        print(Zplus.shape)
+        print(svd.V_matrix.shape)
+        print(Wplus.shape)
 
-    def _get_eigen_vectors(self,K):
-        '''
-        This function will be used for computation of the eigen value
-        and eigen vectors of a symmetric matrix.
-        USAGE:
-            INPUT:
-                K       : a symmetric matrix
-            OUTPUT:
-                eval    : the eigen value vector in ascending order
-                evec    : the eigen vector matrix as a columns in same
-                            order as the eigen value.
-        '''
-        eval,evec=np.linalg.eigh(K)
-
-        return eval,evec
-
-    def _save_svd_decomposition(self,filepath):
-        '''
-        This fucntion will save the decomposition to the dataset
-        directory which can be used later without need to decomp
-        -osition again.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
-        '''
-        filename=filepath+self.svd_filename
-        np.savez_compressed(filename,
-                            U_matrix=self.U_matrix,
-                            V_matrix=self.V_matrix,
-                            sigma_vector=self.sigma_vector,
-                            sigma2_vector=self.sigma2_vector)
-        # #No need to store the data matrix now
-        # self.data_matrix=None
-
-    def _load_cur_decomposition(self,filepath):
-        '''
-        This function will load the cur decompoased matrix to the
-        member varaibles of the CUR object.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
-        '''
-        #Loading the dataset
-        filename=filepath+self.cur_filename
-        load_dict=np.load(filename)
-
-        #Now assigning them to the member variables
-        # self.sigma_vector=load_dict['sigma_vector']
-        # self.sigma2_vector=load_dict['sigma2_vector']
-        # self.U_matrix=load_dict['U_matrix']
-        # self.V_matrix=load_dict['V_matrix']
 
 if __name__=='__main__':
     filepath='ml-1m/'
