@@ -313,7 +313,8 @@ class SVD():
             OUTPUT:
                 rmse_val    : the average root mean squared error.
         '''
-        diff=self.data_matrix-self.reconstructed_matrix
+        non_zero_mask=self.data_matrix!=0
+        diff=(self.data_matrix-self.reconstructed_matrix)*non_zero_mask
         rmse_val=np.mean(np.square(diff))**(0.5)
 
         #Printing the real utility matrix and prediction
