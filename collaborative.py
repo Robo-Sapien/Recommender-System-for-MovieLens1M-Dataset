@@ -5,12 +5,17 @@ from operator import itemgetter
 from array import *
 #from collaborative_baseline import *
 
-neighbourhood_size = 10
+neighbourhood_size = 15
 
 def generate_similarity_matrix(rating_matrix,filepath,filename):
 	'''
 	This function will generate the similarity matrix between
 	all the movie to movie pair.
+	:param rating_matrix: The utility matrix (User ID vs Movie ID)
+	:param filepath: relative path to the file.
+	:param filename: name of the file to be the stored.
+
+	:return: Similarity matrix generated for the 1st time
 	'''
 	#Initializing the relationship matrix
 	num_movies=rating_matrix.shape[1]
@@ -19,9 +24,7 @@ def generate_similarity_matrix(rating_matrix,filepath,filename):
 	for movie1 in range(num_movies):
 		for movie2 in range(movie1+1,num_movies):
 			print ("Finding the similarity for {}--{}".format(movie1,movie2))
-			sim_mat[movie1,movie2]=find_similarity_scores(movie1,
-														  movie2,
-														rating_matrix)
+			sim_mat[movie1,movie2]=find_similarity_scores(movie1, movie2, rating_matrix)
 			sim_mat[movie2,movie1]=sim_mat[movie1,movie2]
 
 	#Saving the matrix
@@ -31,6 +34,14 @@ def generate_similarity_matrix(rating_matrix,filepath,filename):
 	return sim_mat
 
 def find_baseline_matrix(rating_matrix):
+	'''
+	This function will generate matrix containing baselines
+	for all (user_id, movie_id) pairs
+	:param rating_matrix: The utility matrix (User ID vs Movie ID)
+
+	:return baseline_matrix: matrix containing baseline estimates of all possible (User id, Movie id) pairs
+
+	'''
 	#Masking the array
 	non_zero_mask=rating_matrix!=0
 
@@ -62,6 +73,16 @@ def find_baseline_matrix(rating_matrix):
 	return baseline_matrix
 
 def find_similarity_scores(movie1_id, movie2_id,rating_matrix):
+	'''
+	This function computes the centered cosine similarity scores (Pearson correlation) for 2 movies.
+
+	:param movie1_id: ID for 1st movie
+	:param movie2_id: ID for 2nd movie
+	:param rating_matrix: The utility matrix (User ID vs Movie ID)
+
+	:return score: similarity score for given 2 movies
+	'''
+
 	movie1_ratinglist=rating_matrix[:,movie1_id]
 	movie2_ratinglist=rating_matrix[:,movie2_id]
 
@@ -85,6 +106,15 @@ def find_similarity_scores(movie1_id, movie2_id,rating_matrix):
 
 
 def weighted_avg(top_similarityScore_list, neighbourhoodRating_list):
+	'''
+	This function computes the weighted average of neighbourhood 
+	ratings w.r.t their similarity scores
+
+	:param top_similarityScore_list: List containing top N scores
+	:param neighbourhoodRating_list: List containing their corresponding ratings
+
+	:return weightedAvg: weighted average
+	'''
 	top_similarityScore_list = np.asarray(top_similarityScore_list)
 	neighbourhoodRating_list = np.asarray(neighbourhoodRating_list)
 	numerator = np.sum(np.multiply(top_similarityScore_list, neighbourhoodRating_list))

@@ -36,28 +36,34 @@ def precision_on_top_k(validation_matrix,pred_list,good_threshold):
 		pred_tuple=(movie_id,predict_rating)
 
 		#Creating or appending the actual and prediction in user dict
+
 		try:
-			user_dict[user_id][0]=user_dict[user_id][0].append(actual_tuple)
-			user_dict[user_id][1]=user_dict[user_id][1].append(pred_tuple)
+			user_dict[user_id][0].append(actual_tuple)
+			user_dict[user_id][1].append(pred_tuple)
 		except:
-			user_dict[user_id][0]=[actual_tuple]
-			user_dict[user_id][1]=[pred_tuple]
+			user_dict[user_id]=[[actual_tuple],[pred_tuple]]
+
 
 	#Calculating the precision for each user
 	overall_precision=0.0
+	count=0
 	for key in user_dict.keys():
 		#Getting the relevant list of each user
 		actual_list=user_dict[key][0]
 		predict_list=user_dict[key][1]
 
 		#Calculating the precision score
-		precision=_calculate_user_precision(actual_list,predict_list,good_threshold)
-		print ("precision for user:{} is:{}".format(key,precision))
+		try:
+			precision=_calculate_user_precision(actual_list,predict_list,good_threshold)
+			#print ("precision for user:{} is:{}".format(key,precision))
 
-		overall_precision+=precision
+			overall_precision+=precision
+			count=count+1
+		except:
+			continue
 
 	#Calcualting the final precision
-	overall_precision=overall_precision/len(user_dict.keys())
+	overall_precision=overall_precision/count
 
 	return overall_precision
 
@@ -74,7 +80,8 @@ def _calculate_user_precision(actual_list,predict_list,good_threshold):
 			precision		: the precision for one user
 	'''
 	#Creating the relevant list
-	relevant_list=[tup for tup in actual_list if tup[1]>good_threshold]
+	#print(actual_list)
+	relevant_list=[tup for tup in actual_list if tup[1]>=good_threshold]
 	relevant_movie_set=set([tup[0] for tup in relevant_list])
 	k_value=len(relevant_list)
 
@@ -137,7 +144,8 @@ if __name__=='__main__':
 		#Saving them to the list of results
 		collab_predicted_list.append(collab_prediction)
 		collab_baseline_predicted_list.append(collab_baseline_prediction)
-
+	print(precision_on_top_k(validation_matrix,collab_predicted_list,3.0))
+	print(precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0))
 	print(RMSE(collab_predicted_list,actual_list))
 	print(RMSE(collab_baseline_predicted_list,actual_list))
 	print(Spearman_correlation(collab_predicted_list,actual_list))
