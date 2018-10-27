@@ -21,7 +21,7 @@ list=[1,2,3]
 print(list[0])
 print(validation_matrix)
 
-print(find_similarity_scores([0,4,0,5,0,0,5,0,0,3,0,1],[0,5,3,4,0,3,0,2,1,0,4,2]))
+print(find_similarity_scores(0,1192,rating_matrix))
 
 print(RMSE([1,2],[1,4]))
 

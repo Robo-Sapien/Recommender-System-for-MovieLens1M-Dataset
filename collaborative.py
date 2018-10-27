@@ -5,7 +5,7 @@ from operator import itemgetter
 from array import *
 #from collaborative_baseline import *
 
-neighbourhood_size = 2
+neighbourhood_size = 10
 
 def generate_similarity_matrix(rating_matrix,filepath,filename):
 	'''
@@ -39,17 +39,24 @@ def find_baseline_matrix(rating_matrix):
 	global_mean = np.sum(rating_matrix)*1.0/N_rating_matrix
 
 	#Calculating the user rating deviation
-	count_x=np.sum(non_zero_mask,axis=1,keepdims=1)
-	mean_x=np.sum(rating_matrix,axis=1,keepdims=True)/count_x - global_mean
+	count_x=np.sum(non_zero_mask,axis=1,keepdims=True)
+	mean_x=np.sum(rating_matrix,axis=1,keepdims=True)*1.0
+	for i in range(mean_x.shape[0]):
+		if count_x[i,0]!=0:
+			mean_x[i,0]=mean_x[i,0]/count_x[i,0]-global_mean
 
 	#Calculating the movie rating deviation
 	count_m=np.sum(non_zero_mask,axis=0)
-	mean_m=np.sum(rating_matrix,axis=0,keepdims=True)/count_m - global_mean
+	mean_m=np.sum(rating_matrix,axis=0,keepdims=True)*1.0
+	for i in range(mean_m.shape[1]):
+		if count_m[i]!=0:
+			mean_m[0,i]=mean_m[0,i]/count_m[i]-global_mean
 
-	#print (mean_m.shape,mean_x.shape)
+	#print (global_mean,mean_x[0,0],mean_m[0,:])
 
 	#Creating the baseline matrix
 	dummy_ones=np.ones((rating_matrix.shape),dtype=np.float64)
+	print (dummy_ones.shape)
 	baseline_matrix=mean_x+(dummy_ones*mean_m)+global_mean
 
 	return baseline_matrix

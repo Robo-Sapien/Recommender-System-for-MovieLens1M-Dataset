@@ -51,7 +51,7 @@ def predict_rating(user_id, movie_id,rating_matrix,movie_sim_matrix,baseline_mat
 	key = sorted(key,reverse=True)
 	values = [d[k] for k in key]
 
-	iter_len=neighbourhood_size+1
+	iter_len=neighbourhood_size
 	if iter_len>len(key):
 		iter_len=len(key)
 
@@ -92,7 +92,8 @@ if __name__=='__main__':
 
 	print ("Calculating the baseline matrix")
 	baseline_matrix=find_baseline_matrix(rating_matrix)
-
+	print(baseline_matrix[0][1192])
+	print(find_baseline(0,1192,rating_matrix))
 	collab_predictedRating = predict_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix,0)
 	baseline_predictedRating = predict_baseline_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix)
 	print(collab_predictedRating)
