@@ -110,12 +110,15 @@ if __name__=='__main__':
 	print ("Loading the sim matrix")
 	try:
 		movie_sim_matrix=load_sim_matrix(filepath,filename)
+		print("matrix loaded")
 	except:
+		print("matrix not found, generating similarity_matrix")
 		movie_sim_matrix = generate_similarity_matrix(rating_matrix,filepath,filename)
+		print("matrix generated and cached")
 
-	print ("Calculating the baseline matrix")
-	baseline_matrix=find_baseline_matrix(rating_matrix)
-	collab_predictedRating = predict_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix,0)
-	baseline_predictedRating = predict_baseline_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix)
-	print(collab_predictedRating)
-	print(baseline_predictedRating)
+	# print ("Calculating the baseline matrix")
+	# baseline_matrix=find_baseline_matrix(rating_matrix)
+	# collab_predictedRating = predict_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix,0)
+	# baseline_predictedRating = predict_baseline_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix)
+	# print(collab_predictedRating)
+	# print(baseline_predictedRating)

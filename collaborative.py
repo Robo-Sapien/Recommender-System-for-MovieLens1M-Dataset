@@ -130,6 +130,6 @@ if __name__=='__main__':
     filepath='ml-1m/'
     rating_matrix,validation_matrix = load_rating_matrix(filepath)
 
-    predictedRating = predict_rating(0,1192,rating_matrix,0)
-    print(predictedRating)
+    #predictedRating = predict_rating(0,1192,rating_matrix,0)
+    #print(predictedRating)
     #print(validation_matrix)
