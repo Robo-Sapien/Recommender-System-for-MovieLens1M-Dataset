@@ -1,10 +1,12 @@
 #################### IMPORTING LIBRARIES ################
 import numpy as np
 import math
+import datetime
 from svd import SVD
 np.random.seed(1)
 
 from data_parser import load_rating_matrix
+from evaluation_collab import precision_on_top_k
 
 ################### HELPER FUNCTIONS ###################
 class CUR():
@@ -109,7 +111,7 @@ class CUR():
         denominator = np.sum(np.square(data_matrix))
         for c in range(data_matrix.shape[1]):
             ColumnProb.append(np.sum(np.square(data_matrix[:,c]))/denominator)
-        chosenColumns = np.random.choice(data_matrix.shape[1], math.floor(0.9*data_matrix.shape[1]), False, ColumnProb)
+        chosenColumns = np.random.choice(data_matrix.shape[1], int(math.floor(0.9*data_matrix.shape[1])), False, ColumnProb)
 
         C_matrix = np.zeros(shape=(data_matrix.shape[0],chosenColumns.shape[0]))
         for i,col in enumerate(chosenColumns):
@@ -118,7 +120,7 @@ class CUR():
         RowProb = []
         for r in range(data_matrix.shape[0]):
             RowProb.append(np.sum(np.square(data_matrix[r,:]))/denominator)
-        chosenRows = np.random.choice(data_matrix.shape[0], math.floor(0.9*data_matrix.shape[0]), False, RowProb)
+        chosenRows = np.random.choice(data_matrix.shape[0], int(math.floor(0.9*data_matrix.shape[0])), False, RowProb)
 
         R_matrix = np.zeros(shape=(chosenRows.shape[0],data_matrix.shape[1]))
         for i,row in enumerate(chosenRows):
@@ -198,7 +200,7 @@ class CUR():
         rmse_val=np.mean(np.square(diff))**(0.5)
         print(rmse_val)
 
-    def get_validation_error_correlation(self):
+    def get_validation_error_correlation(self,good_threshold):
         '''
         This function will calculate the validation set error,
         by comparing the prediction made by the reconstructed matrix
@@ -208,6 +210,7 @@ class CUR():
                 rmse_val    : the root mean squared error value.
         '''
         squared_diff=0
+        predict_list=[]
 
         #Iterating over the validation examples
         N=self.validation_matrix.shape[0]
@@ -219,6 +222,9 @@ class CUR():
             rating_diff =   self.validation_matrix[i,2]-\
                         self.reconstructed_matrix[user_id,movie_id],
             rating_diff=np.squeeze(rating_diff)
+
+            #Adding the prediction to list
+            predict_list.append(self.reconstructed_matrix[user_id,movie_id])
 
             #Printing for interactiveness
             # if i%100==0:
@@ -237,14 +243,24 @@ class CUR():
         #Finding the spearman correlation
         spearman_coefficient=1-6*squared_diff/(N*(N*N-1))
 
-        return rmse_val,spearman_coefficient
+        #Finding out the precision on top k
+        precision=precision_on_top_k(self.validation_matrix,
+                                    predict_list,good_threshold)
+
+        return rmse_val,spearman_coefficient,precision
 
 
 if __name__=='__main__':
     filepath='ml-1m/'
     cur=CUR(filepath,'')
-    print(cur.get_validation_error_correlation())
+    t1=datetime.datetime.now()
+    print(cur.get_validation_error_correlation(good_threshold=3))
+    t2=datetime.datetime.now()
+    print (t2-t1)
 
     print('\n90% Energy: \n')
     cur=CUR(filepath,'90-percent')
-    print(cur.get_validation_error_correlation())
+    t1=datetime.datetime.now()
+    print(cur.get_validation_error_correlation(good_threshold=3))
+    t2=datetime.datetime.now()
+    print (t2-t1)
