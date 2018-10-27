@@ -1,23 +1,6 @@
 from collaborative import *
 from collaborative_baseline import *
 
-def load_sim_matrix(filepath,filename):
-	'''
-	This function will load the similarity matrix.
-
-	:param filepath: relative path to the file.
-	:param filename: name of the file to be the stored.
-
-	:return: Similarity matrix (loaded from .npz file)
-
-
-	'''
-	filename=filepath+filename
-	loaded=np.load(filename)
-
-	return loaded['movie_sim_matrix']
-
-
 
 def predict_rating(user_id, movie_id,rating_matrix,movie_sim_matrix,baseline_matrix,flag):
 	'''
@@ -101,6 +84,22 @@ def predict_baseline_rating(user_id, movie_id, rating_matrix,movie_sim_matrix,ba
 
 	return combined_rating
 
+def load_sim_matrix(filepath,filename):
+	'''
+	This function will load the similarity matrix.
+
+	:param filepath: relative path to the file.
+	:param filename: name of the file to be the stored.
+
+	:return: Similarity matrix (loaded from .npz file)
+
+
+	'''
+	filename=filepath+filename
+	loaded=np.load(filename)
+
+	return loaded['movie_sim_matrix']
+
 
 if __name__=='__main__':
 	filename='similarity_matrix.npz'
@@ -116,8 +115,6 @@ if __name__=='__main__':
 
 	print ("Calculating the baseline matrix")
 	baseline_matrix=find_baseline_matrix(rating_matrix)
-	print(baseline_matrix[0][1192])
-	print(find_baseline(0,1192,rating_matrix))
 	collab_predictedRating = predict_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix,0)
 	baseline_predictedRating = predict_baseline_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix)
 	print(collab_predictedRating)

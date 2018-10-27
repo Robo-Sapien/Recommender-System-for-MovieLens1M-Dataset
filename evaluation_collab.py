@@ -9,17 +9,16 @@ def precision_on_top_k(validation_matrix,pred_list,good_threshold):
 	'''
 	This function will calculate the precision on the top k elements
 	for each user and then take the average among all of them.
-	USAGE:
-		INPUT:
-			validation_matrix	: the validation matrix containing
-									the user id, movie id and actual rating
-			pred_list			: the prediction made by the collaborative
-									recommender system (in same sequence as
-									validation data)
-			good_threshold		: the threshold of the rating which we will
-									use to make the relevant document set.
-		OUTPUT:
-			precision	: the mean precision value of each user
+	
+	:param validation_matrix: the validation matrix containing
+								the user id, movie id and actual rating
+	:param pred_list: the prediction made by the collaborative
+					   	recommender system (in same sequence as
+						validation data)
+	:param good_threshold: the threshold of the rating which we will
+					use to make the relevant document set.
+	
+	:return precision: the mean precision value of each user
 	'''
 	#Grouping the prediction by the users
 	user_dict={}
@@ -71,13 +70,12 @@ def _calculate_user_precision(actual_list,predict_list,good_threshold):
 	'''
 	This function will be interanally by the precision calculation function
 	for getting the precision for one user.
-	USAGE:
-		INPUT:
-			actual_list		: the list of tuple of movieid and actual rating
-			predcit_list	: the list of tuple of the movieid and the prediction
-			good_threshold	: this has the same meaning as in the caller function
-		OUTPUT:
-			precision		: the precision for one user
+	
+	:param actual_list: the list of tuple of movieid and actual rating
+	:param predcit_list: the list of tuple of the movieid and the prediction
+	:param good_threshold: this has the same meaning as in the caller function
+		
+	:return precision: the precision for one user
 	'''
 	#Creating the relevant list
 	#print(actual_list)
@@ -98,6 +96,14 @@ def _calculate_user_precision(actual_list,predict_list,good_threshold):
 	return precision
 
 def RMSE(predited_rating, actual_rating):
+	'''
+	This function computes the RMSE error, given the actual rating & predicted rating lists
+
+	:param predited_rating: list of Predicted ratings
+	:param actual_rating: list of Actual ratings
+
+	:return RMSEerror: RMSE error value
+	'''
 	N = len(actual_rating)
 	predited_rating = np.asarray(predited_rating)
 	actual_rating = np.asarray(actual_rating)
@@ -108,6 +114,14 @@ def RMSE(predited_rating, actual_rating):
 	return RMSEerror
 
 def Spearman_correlation(predited_rating, actual_rating):
+	'''
+	This function computes the Spearman correlation co-efficient, given the actual rating & predicted rating lists
+
+	:param predited_rating: list of Predicted ratings
+	:param actual_rating: list of Actual ratings
+
+	:return spearman_coeff: Spearman correlation co-efficient
+	'''
 	N = len(actual_rating)
 	predited_rating = np.asarray(predited_rating)
 	actual_rating = np.asarray(actual_rating)
@@ -144,9 +158,11 @@ if __name__=='__main__':
 		#Saving them to the list of results
 		collab_predicted_list.append(collab_prediction)
 		collab_baseline_predicted_list.append(collab_baseline_prediction)
-	print(precision_on_top_k(validation_matrix,collab_predicted_list,3.0))
-	print(precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0))
-	print(RMSE(collab_predicted_list,actual_list))
-	print(RMSE(collab_baseline_predicted_list,actual_list))
-	print(Spearman_correlation(collab_predicted_list,actual_list))
-	print(Spearman_correlation(collab_baseline_predicted_list,actual_list))
+
+	
+	print "RMSE for collaborative: ",RMSE(collab_predicted_list,actual_list)
+	print "RMSE for collaborative+baseline: ",RMSE(collab_baseline_predicted_list,actual_list)
+	print "Spearman correlation for collaborative: ",Spearman_correlation(collab_predicted_list,actual_list)
+	print "Spearman correlation for collaborative+baseline",Spearman_correlation(collab_baseline_predicted_list,actual_list)
+	print "Precision on top K for collaborative: ",precision_on_top_k(validation_matrix,collab_predicted_list,3.0)
+	print "Precision on top K for collaborative+baseline: ",precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0)
