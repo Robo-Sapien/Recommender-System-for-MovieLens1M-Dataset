@@ -2,6 +2,7 @@ import numpy as np
 from data_parser import *
 from scipy import spatial
 from array import *
+import time
 
 from prediction import *
 
@@ -143,7 +144,7 @@ if __name__=='__main__':
 	actual_list = []
 
 	N = validation_matrix.shape[0]
-
+	#start1 = time.time()
 	for i in range(N):
 		#Taking out the validation data
 		user_id = validation_matrix[i,0]
@@ -151,18 +152,27 @@ if __name__=='__main__':
 		actual_list.append(validation_matrix[i,2])
 
 		#Making the Prediction
+		
 		collab_prediction = predict_rating(user_id, movie_id,rating_matrix,movie_sim_matrix,baseline_matrix,0)
+	
+		
 		collab_baseline_prediction = predict_baseline_rating(user_id,movie_id,rating_matrix,movie_sim_matrix,baseline_matrix)
+		
 		print(validation_matrix[i,2],collab_prediction,collab_baseline_prediction)
 
 		#Saving them to the list of results
 		collab_predicted_list.append(collab_prediction)
 		collab_baseline_predicted_list.append(collab_baseline_prediction)
-
 	
+	#print "Time taken for 1 collaborative prediction", time_collab
+	#print "Time taken for 1 collaborative+baseline prediction", time_collab
 	print "RMSE for collaborative: ",RMSE(collab_predicted_list,actual_list)
 	print "RMSE for collaborative+baseline: ",RMSE(collab_baseline_predicted_list,actual_list)
 	print "Spearman correlation for collaborative: ",Spearman_correlation(collab_predicted_list,actual_list)
 	print "Spearman correlation for collaborative+baseline",Spearman_correlation(collab_baseline_predicted_list,actual_list)
 	print "Precision on top K for collaborative: ",precision_on_top_k(validation_matrix,collab_predicted_list,3.0)
 	print "Precision on top K for collaborative+baseline: ",precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0)
+	#end1 = time.time()
+	#duration = end1-start1
+	#time_collab = duration
+	#print "Time taken for 1 collaborative+baseline prediction", time_collab
