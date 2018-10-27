@@ -3,6 +3,7 @@ import numpy as np
 np.random.seed(1)
 
 from data_parser import load_rating_matrix
+from evaluation_collab import precision_on_top_k
 
 ################### HELPER FUNCTIONS ###################
 class SVD():
@@ -331,16 +332,23 @@ class SVD():
 
         return rmse_val
 
-    def get_validation_error_correlation(self):
+    def get_validation_error_correlation(self,good_threshold):
         '''
         This function will calculate the validation set error,
         by comparing the prediction made by the reconstructed matrix
         and the actal value
         USAGE:
+            INPUT:
+                good_threshold : the good threshold rating for the
+                                finding the relavant set.
             OUTPUT:
                 rmse_val    : the root mean squared error value.
+                spearman_coeff: the spearman coefficient of the
+                                error in the prediction.
+                precision   : the precision on top k score
         '''
         squared_diff=0
+        pred_list=[]
 
         #Iterating over the validation examples
         N=self.validation_matrix.shape[0]
@@ -352,6 +360,9 @@ class SVD():
             rating_diff =   self.validation_matrix[i,2]-\
                         self.reconstructed_matrix[user_id,movie_id],
             rating_diff=np.squeeze(rating_diff)
+
+            #Adding the predicted rating to the list
+            pred_list.append(self.reconstructed_matrix[user_id,movie_id])
 
             #Printing for interactiveness
             if i%100==0:
@@ -370,13 +381,18 @@ class SVD():
         #Finding the spearman correlation
         spearman_coefficient=1-6*squared_diff/(N*(N*N-1))
 
-        return rmse_val,spearman_coefficient
+        #Finding the precision on top k
+        precision=precision_on_top_k(self.validation_matrix,
+                                        pred_list,good_threshold)
+
+        return rmse_val,spearman_coefficient,precision
 
 if __name__=='__main__':
     #Creating the svd object
     filepath='ml-1m/'
     mode='normalize'
     filename = 'svd_decomposition.npz'
+    good_threshold=3
     svd=SVD(filepath,filename,mode,'svd')
 
     #Checking the size compatibility
@@ -387,12 +403,12 @@ if __name__=='__main__':
 
     #Recosntructing the svd decomposition
     svd.create_reconstruction(mode)
-    print(svd.get_validation_error_correlation(),'<----vaidError')
+    print(svd.get_validation_error_correlation(good_threshold),'<----vaidError')
     print(svd.get_rmse_reconstruction_error(),'<----trainError')
 
 
     # #Reconstruction with 90% eneergy left
     svd._set_90percent_energy_mode(keep_energy=0.90)
     svd.create_reconstruction(mode)
-    print('vaid:',svd.get_validation_error_correlation())
+    print('vaid:',svd.get_validation_error_correlation(good_threshold))
     print('recon:',svd.get_rmse_reconstruction_error())
