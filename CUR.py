@@ -9,7 +9,7 @@ from data_parser import load_rating_matrix
 from evaluation_collab import precision_on_top_k
 
 ################### HELPER FUNCTIONS ###################
-class CUR():
+class CUR:
     '''
     This class will provide one place functionality for the
     CUR decoposition along with other functions for
@@ -33,9 +33,11 @@ class CUR():
         '''
         Here we will initialize the CUR class by loading the data
         and initializing other variables.
-        USAGE:
-            INPUT:
-                filepath    : the path where the datamatrix is stored
+
+        :param filepath: the path where the datamatrix is stored
+
+        :param mode: to decide if mode is 90% Energy
+
         '''
         self.data_matrix,self.validation_matrix=load_rating_matrix(filepath)
 
@@ -57,11 +59,13 @@ class CUR():
 
     def normalize_dataset(self,mode):
         '''
-        (THINK/TUNABLE)
         This function will normalize the dataset to make the non rated
         movies unbiased.(using the mean subtraction from rated movie)
         Also, to counter the high and low raters problem we have to normalize
         the rating vector of each user to bring their rating to same scale
+
+        :param mode: Indicates whether data matrix has to be normalized
+
         '''
         #Casting the dataset to floating point precision from uint8
         #self.data_matrix=np.array([[3,2,2],[2,3,-2]])
@@ -97,10 +101,9 @@ class CUR():
         This function will generate the C, U and R matrices by
         selecting Columns and rows based on the probabilities
 
-        USAGE:
-            Call this function when using for the first time,
-            to create a CUD decomposition. This will automatically
-            update the C,U,R member elemets of the CUR object.
+        Call this function when using for the first time,
+        to create a CUD decomposition. This will automatically
+        update the C,U,R member elemets of the CUR object.
         '''
         #Getting the data matrix
         data_matrix=(self.data_matrix).astype(np.float64)
@@ -156,14 +159,14 @@ class CUR():
         rmse_val=np.mean(np.square(diff))**(0.5)
         print(rmse_val)
 
-    def _save_cur_decomposition(self,filepath, mode):
+    def _save_cur_decomposition(self, filepath, mode):
         '''
         This fucntion will save the decomposition to the dataset
         directory which can be used later without need to decomp
         -osition again.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
+
+        :param filepath: the filepath of the dataset directory
+
         '''
         filename = filepath + mode + 'CUR_decomposition.npz'
         np.savez_compressed(filename,
@@ -178,9 +181,7 @@ class CUR():
         '''
         This function will load the svd decompoased matrix to the
         member varaibles of the SVD object.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
+        :param filepath    :the filepath of the dataset directory
         '''
         #Loading the dataset
         filename = filepath + mode + 'CUR_decomposition.npz'
@@ -205,9 +206,7 @@ class CUR():
         This function will calculate the validation set error,
         by comparing the prediction made by the reconstructed matrix
         and the actal value
-        USAGE:
-            OUTPUT:
-                rmse_val    : the root mean squared error value.
+        :return rmse_val    : the root mean squared error value.
         '''
         squared_diff=0
         predict_list=[]

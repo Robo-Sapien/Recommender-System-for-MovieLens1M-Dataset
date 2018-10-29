@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to RecommenderSystem’s documentation! &#8212; RecommenderSystem 0.0.1 documentation</title>
+    <title>Recommender System Documentation &#8212; RecommenderSystem 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -31,19 +31,325 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="welcome-to-recommendersystem-s-documentation">
-<h1>Welcome to RecommenderSystem’s documentation!<a class="headerlink" href="#welcome-to-recommendersystem-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="recommender-system-documentation">
+<h1>Recommender System Documentation<a class="headerlink" href="#recommender-system-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="usage-information">
+<h2>Usage Information<a class="headerlink" href="#usage-information" title="Permalink to this headline">¶</a></h2>
+<p>PART 0: DATA PARSING</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><dl class="first docutils">
+<dt>First of all we have to generate the dataset in the required</dt>
+<dd>numpy format from the raw files.</dd>
+</dl>
+</li>
+<li>Run python data_parser.py</li>
+<li><dl class="first docutils">
+<dt>This will create a numpy array of the dataset and store them</dt>
+<dd>in the dataset directory for firthur processing.</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+<p>PART 1: Collaborative Filtering</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><dl class="first docutils">
+<dt>To first generate the similarity matrix and cache it, run:</dt>
+<dd>python prediction.py</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Then, to make the predictions and compute errors, run:</dt>
+<dd>python evaluation_collab.py</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+<p>PART 2: SVD DECOMPOSITION</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><dl class="first docutils">
+<dt>Simply run the following script</dt>
+<dd>python svd.py</dd>
+</dl>
+</li>
+</ol>
+<dl class="docutils">
+<dt>2.This will automatically load the dataset and will load the</dt>
+<dd>decomposition is already saved locally. Otherwise it will first
+create the decomposition and then automatically save them
+locally on the dataset directory.</dd>
+</dl>
+</div></blockquote>
+<p>PART 3: CUR DECOMPOSITION</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><dl class="first docutils">
+<dt>Simply run the following script</dt>
+<dd>python CUR.py</dd>
+</dl>
+</li>
+</ol>
+<dl class="docutils">
+<dt>2.This will automatically load the dataset and will load the</dt>
+<dd>decomposition is already saved locally. Otherwise it will first
+create the decomposition and then automatically save them
+locally on the dataset directory.</dd>
+</dl>
+</div></blockquote>
+</div>
+</div>
 <div class="section" id="documentation-for-the-code">
-<h2>Documentation for the Code<a class="headerlink" href="#documentation-for-the-code" title="Permalink to this headline">¶</a></h2>
+<h1>Documentation for the Code<a class="headerlink" href="#documentation-for-the-code" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<div class="section" id="recommender-system-collaborative">
+<h2>Recommender System Collaborative<a class="headerlink" href="#recommender-system-collaborative" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>collaborative.py</dt>
+<dd><span class="target" id="module-collaborative"></span><dl class="first function">
+<dt id="collaborative.find_baseline_matrix">
+<code class="descclassname">collaborative.</code><code class="descname">find_baseline_matrix</code><span class="sig-paren">(</span><em>rating_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborative.html#find_baseline_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborative.find_baseline_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will generate matrix containing baselines
+for all (user_id, movie_id) pairs
+:param rating_matrix: The utility matrix (User ID vs Movie ID)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Return baseline_matrix:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">matrix containing baseline estimates of all possible (User id, Movie id) pairs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="collaborative.find_similarity_scores">
+<code class="descclassname">collaborative.</code><code class="descname">find_similarity_scores</code><span class="sig-paren">(</span><em>movie1_id</em>, <em>movie2_id</em>, <em>rating_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborative.html#find_similarity_scores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborative.find_similarity_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the centered cosine similarity scores (Pearson correlation) for 2 movies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>movie1_id</strong> – ID for 1st movie</li>
+<li><strong>movie2_id</strong> – ID for 2nd movie</li>
+<li><strong>rating_matrix</strong> – The utility matrix (User ID vs Movie ID)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return score:</th><td class="field-body"><p class="first last">similarity score for given 2 movies</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="collaborative.generate_similarity_matrix">
+<code class="descclassname">collaborative.</code><code class="descname">generate_similarity_matrix</code><span class="sig-paren">(</span><em>rating_matrix</em>, <em>filepath</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborative.html#generate_similarity_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborative.generate_similarity_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will generate the similarity matrix between
+all the movie to movie pair.
+:param rating_matrix: The utility matrix (User ID vs Movie ID)
+:param filepath: relative path to the file.
+:param filename: name of the file to be the stored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Similarity matrix generated for the 1st time</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="last function">
+<dt id="collaborative.weighted_avg">
+<code class="descclassname">collaborative.</code><code class="descname">weighted_avg</code><span class="sig-paren">(</span><em>top_similarityScore_list</em>, <em>neighbourhoodRating_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborative.html#weighted_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborative.weighted_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the weighted average of neighbourhood 
+ratings w.r.t their similarity scores</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>top_similarityScore_list</strong> – List containing top N scores</li>
+<li><strong>neighbourhoodRating_list</strong> – List containing their corresponding ratings</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return weightedAvg:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">weighted average</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>evaluation_collab.py</dt>
+<dd><span class="target" id="module-evaluation_collab"></span><dl class="first function">
+<dt id="evaluation_collab.RMSE">
+<code class="descclassname">evaluation_collab.</code><code class="descname">RMSE</code><span class="sig-paren">(</span><em>predited_rating</em>, <em>actual_rating</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evaluation_collab.html#RMSE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#evaluation_collab.RMSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the RMSE error, given the actual rating &amp; predicted rating lists</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>predited_rating</strong> – list of Predicted ratings</li>
+<li><strong>actual_rating</strong> – list of Actual ratings</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return RMSEerror:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">RMSE error value</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="evaluation_collab.Spearman_correlation">
+<code class="descclassname">evaluation_collab.</code><code class="descname">Spearman_correlation</code><span class="sig-paren">(</span><em>predited_rating</em>, <em>actual_rating</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evaluation_collab.html#Spearman_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#evaluation_collab.Spearman_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the Spearman correlation co-efficient, given the actual rating &amp; predicted rating lists</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>predited_rating</strong> – list of Predicted ratings</li>
+<li><strong>actual_rating</strong> – list of Actual ratings</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return spearman_coeff:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">Spearman correlation co-efficient</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="last function">
+<dt id="evaluation_collab.precision_on_top_k">
+<code class="descclassname">evaluation_collab.</code><code class="descname">precision_on_top_k</code><span class="sig-paren">(</span><em>validation_matrix</em>, <em>pred_list</em>, <em>good_threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evaluation_collab.html#precision_on_top_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#evaluation_collab.precision_on_top_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will calculate the precision on the top k elements
+for each user and then take the average among all of them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>validation_matrix</strong> – the validation matrix containing
+the user id, movie id and actual rating</li>
+<li><strong>pred_list</strong> – the prediction made by the collaborative
+recommender system (in same sequence as
+validation data)</li>
+<li><strong>good_threshold</strong> – the threshold of the rating which we will
+use to make the relevant document set.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return precision:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">the mean precision value of each user</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>prediction.py</dt>
+<dd><span class="target" id="module-prediction"></span><dl class="first function">
+<dt id="prediction.load_sim_matrix">
+<code class="descclassname">prediction.</code><code class="descname">load_sim_matrix</code><span class="sig-paren">(</span><em>filepath</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prediction.html#load_sim_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prediction.load_sim_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will load the similarity matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filepath</strong> – relative path to the file.</li>
+<li><strong>filename</strong> – name of the file to be the stored.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Similarity matrix (loaded from .npz file)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="prediction.predict_baseline_rating">
+<code class="descclassname">prediction.</code><code class="descname">predict_baseline_rating</code><span class="sig-paren">(</span><em>user_id</em>, <em>movie_id</em>, <em>rating_matrix</em>, <em>movie_sim_matrix</em>, <em>baseline_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prediction.html#predict_baseline_rating"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prediction.predict_baseline_rating" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will predict the rating according 
+to collaborative + baseline algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> – User ID for which rating has to be predicted</li>
+<li><strong>movie_id</strong> – Movie ID for which rating has to be predicted</li>
+<li><strong>rating_matrix</strong> – The utility matrix (User ID vs Movie ID)</li>
+<li><strong>movie_sim_matrix</strong> – Cached matrix containing similarity scores of all possible pairs of movies</li>
+<li><strong>baseline_matrix</strong> – matrix containing baseline estimates of all possible (User id, Movie id) pairs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Predicted rating as per collaborative + baseline algorithm</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="last function">
+<dt id="prediction.predict_rating">
+<code class="descclassname">prediction.</code><code class="descname">predict_rating</code><span class="sig-paren">(</span><em>user_id</em>, <em>movie_id</em>, <em>rating_matrix</em>, <em>movie_sim_matrix</em>, <em>baseline_matrix</em>, <em>flag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prediction.html#predict_rating"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prediction.predict_rating" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will predict the rating according 
+to collaborative filtering algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> – User ID for which rating has to be predicted</li>
+<li><strong>movie_id</strong> – Movie ID for which rating has to be predicted</li>
+<li><strong>rating_matrix</strong> – The utility matrix (User ID vs Movie ID)</li>
+<li><strong>movie_sim_matrix</strong> – Cached matrix containing similarity scores of all possible pairs of movies</li>
+<li><strong>baseline_matrix</strong> – matrix containing baseline estimates of all possible (User id, Movie id) pairs</li>
+<li><strong>flag</strong> – 0 indicates normal collaborative filtering mode, 1 indicates collaborative+baseline mode</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Predicted rating as per collaborative filtering algorithm</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd>
+</dl>
+</li>
+</ol>
 </div>
-</div>
-<div class="section" id="recommendersystem-collaborative">
-<h1>RecommenderSystem Collaborative<a class="headerlink" href="#recommendersystem-collaborative" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-collaborative"></span></div>
 <div class="section" id="module-svd">
-<span id="recommendersystem-svd"></span><h1>RecommenderSystem SVD<a class="headerlink" href="#module-svd" title="Permalink to this headline">¶</a></h1>
+<span id="recommender-system-svd"></span><h2>Recommender System SVD<a class="headerlink" href="#module-svd" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="svd.SVD">
 <em class="property">class </em><code class="descclassname">svd.</code><code class="descname">SVD</code><span class="sig-paren">(</span><em>filepath</em>, <em>filename</em>, <em>mode</em>, <em>useMode</em>, <em>CUR_Matrix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD" title="Permalink to this definition">¶</a></dt>
@@ -57,18 +363,15 @@ concept space.</p>
 <dd><p>This function will reconstruct the rating matrix, using the
 decomposed component and also denormalize it to have
 same mean and variance for each user.
-(matching their rating style)
-USAGE:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>INPUT:</dt>
-<dd><dl class="first last docutils">
-<dt>mode <span class="classifier-delimiter">:</span> <span class="classifier">where we have to denormalize the reconstructed</span></dt>
-<dd>matrix usign the mean rating of the user</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
+(matching their rating style)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mode</strong> – where we have to denormalize the reconstructed matrix usign the mean rating of the user</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -76,41 +379,50 @@ USAGE:</p>
 <code class="descname">generate_svd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.generate_svd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.generate_svd" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will generate the eigen value decomposition
 of the data matrix and store it as a member variable.</p>
-<dl class="docutils">
-<dt>USAGE:</dt>
-<dd>Call this function when using for the first time,
+<p>Call this function when using for the first time,
 to create a SVD decomposition. This will automatically
-update the U,Sigma,V member elemets of the SVD object.</dd>
-</dl>
+update the U,Sigma,V member elemets of the SVD object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="svd.SVD.get_rmse_reconstruction_error">
 <code class="descname">get_rmse_reconstruction_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.get_rmse_reconstruction_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.get_rmse_reconstruction_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will calculate the root-mean squared error
-of the reconstruction and the actual matrix.
-USAGE:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>OUTPUT:</dt>
-<dd>rmse_val    : the average root mean squared error.</dd>
-</dl>
-</div></blockquote>
+of the reconstruction and the actual matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Return rmse_val:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">the average root mean squared error.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="svd.SVD.get_validation_error_correlation">
-<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><em>good_threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will calculate the validation set error,
 by comparing the prediction made by the reconstructed matrix
-and the actal value
-USAGE:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>OUTPUT:</dt>
-<dd>rmse_val    : the root mean squared error value.</dd>
-</dl>
-</div></blockquote>
+and the actal value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>good_threshold</strong> – the good threshold rating for the finding the relavant set.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return rmse_val:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">the root mean squared error value.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Return spearman_coeff:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">the spearman coefficient of the error in the prediction.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return precision:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">the precision on top k score</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -119,44 +431,47 @@ USAGE:</p>
 <dd><p>This function will make the prediction given the movieid and
 the userid by projecting the movie into the concept space
 and taking the cosine similarity of user personality
-in the same-concept space
-USAGE:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>INPUT:</dt>
-<dd><dl class="first last docutils">
-<dt>userid <span class="classifier-delimiter">:</span> <span class="classifier">the userid for which we have to make</span></dt>
-<dd>recommendation.</dd>
-<dt>movieid <span class="classifier-delimiter">:</span> <span class="classifier">the movie for which we have to make the</span></dt>
-<dd>prediction for the user.</dd>
-</dl>
-</dd>
-<dt>OUPUT:</dt>
-<dd><dl class="first last docutils">
-<dt>similarity <span class="classifier-delimiter">:</span> <span class="classifier">the cosine similarity of user and movie.</span></dt>
-<dd>rescale it to appropriate rating scale
-before calculating when using</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
+in the same-concept space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>userid</strong> – the userid for which we have to make recommendation.</li>
+<li><strong>movieid</strong> – the movie for which we have to make the prediction for the user.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return similarity:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">the cosine similarity of user and movie. Rescale it to appropriate rating scale before calculating when using</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="svd.SVD.normalize_dataset">
 <code class="descname">normalize_dataset</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svd.html#SVD.normalize_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svd.SVD.normalize_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>(THINK/TUNABLE)
-This function will normalize the dataset to make the non rated
+<dd><p>This function will normalize the dataset to make the non rated
 movies unbiased.(using the mean subtraction from rated movie)
 Also, to counter the high and low raters problem we have to normalize
 the rating vector of each user to bring their rating to same scale</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mode</strong> – Indicates whether data matrix has to be normalized</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="module-CUR">
-<span id="recommendersystem-cur"></span><h1>RecommenderSystem CUR<a class="headerlink" href="#module-CUR" title="Permalink to this headline">¶</a></h1>
+<span id="recommender-system-cur"></span><h2>Recommender System CUR<a class="headerlink" href="#module-CUR" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="CUR.CUR">
 <em class="property">class </em><code class="descclassname">CUR.</code><code class="descname">CUR</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR" title="Permalink to this definition">¶</a></dt>
@@ -169,49 +484,48 @@ concept space.</p>
 <code class="descname">generate_cur</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.generate_cur"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.generate_cur" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will generate the C, U and R matrices by
 selecting Columns and rows based on the probabilities</p>
-<dl class="docutils">
-<dt>USAGE:</dt>
-<dd>Call this function when using for the first time,
+<p>Call this function when using for the first time,
 to create a CUD decomposition. This will automatically
-update the C,U,R member elemets of the CUR object.</dd>
-</dl>
+update the C,U,R member elemets of the CUR object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="CUR.CUR.get_validation_error_correlation">
-<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_validation_error_correlation</code><span class="sig-paren">(</span><em>good_threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.get_validation_error_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.get_validation_error_correlation" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will calculate the validation set error,
 by comparing the prediction made by the reconstructed matrix
 and the actal value
-USAGE:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>OUTPUT:</dt>
-<dd>rmse_val    : the root mean squared error value.</dd>
-</dl>
-</div></blockquote>
+:return rmse_val    : the root mean squared error value.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="CUR.CUR.normalize_dataset">
 <code class="descname">normalize_dataset</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/CUR.html#CUR.normalize_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#CUR.CUR.normalize_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>(THINK/TUNABLE)
-This function will normalize the dataset to make the non rated
+<dd><p>This function will normalize the dataset to make the non rated
 movies unbiased.(using the mean subtraction from rated movie)
 Also, to counter the high and low raters problem we have to normalize
 the rating vector of each user to bring their rating to same scale</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mode</strong> – Indicates whether data matrix has to be normalized</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
 <li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
 <li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
 </ul>
+</div>
 </div>
 
 

@@ -1,0 +1,216 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>prediction &#8212; RecommenderSystem 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for prediction</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collaborative</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">collaborative_baseline</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="predict_rating"><a class="viewcode-back" href="../index.html#prediction.predict_rating">[docs]</a><span class="k">def</span> <span class="nf">predict_rating</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="p">,</span><span class="n">rating_matrix</span><span class="p">,</span><span class="n">movie_sim_matrix</span><span class="p">,</span><span class="n">baseline_matrix</span><span class="p">,</span><span class="n">flag</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function will predict the rating according </span>
+<span class="sd">	to collaborative filtering algorithm.</span>
+
+<span class="sd">	:param user_id: User ID for which rating has to be predicted</span>
+<span class="sd">	:param movie_id: Movie ID for which rating has to be predicted</span>
+<span class="sd">	:param rating_matrix: The utility matrix (User ID vs Movie ID)</span>
+<span class="sd">	:param movie_sim_matrix: Cached matrix containing similarity scores of all possible pairs of movies</span>
+<span class="sd">	:param baseline_matrix: matrix containing baseline estimates of all possible (User id, Movie id) pairs</span>
+<span class="sd">	:param flag: 0 indicates normal collaborative filtering mode, 1 indicates collaborative+baseline mode</span>
+
+<span class="sd">	:return: Predicted rating as per collaborative filtering algorithm</span>
+<span class="sd">		</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">movie_list_for_userid</span> <span class="o">=</span> <span class="n">rating_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,:]</span>
+
+	<span class="n">non_zero_ratings_indices_tuple</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">movie_list_for_userid</span><span class="p">)</span>
+	<span class="n">non_zero_ratings_indices_array</span> <span class="o">=</span>  <span class="n">non_zero_ratings_indices_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">non_zero_ratings</span> <span class="o">=</span> <span class="n">movie_list_for_userid</span><span class="p">[</span><span class="n">non_zero_ratings_indices_tuple</span><span class="p">]</span>
+	<span class="n">non_zero_ratings</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">non_zero_ratings</span><span class="p">]</span> <span class="c1">#list of nonzero ratings for user_id</span>
+
+	<span class="c1">#flag==1 means collaborative+baseline approach mode</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">flag</span><span class="o">==</span><span class="mi">1</span><span class="p">):</span>
+		<span class="n">mask</span><span class="o">=</span><span class="n">rating_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,:]</span><span class="o">!=</span><span class="mi">0</span>
+		<span class="n">local_baseline_list</span><span class="o">=</span><span class="n">baseline_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">mask</span><span class="p">]</span>
+		<span class="n">non_zero_ratings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">non_zero_ratings</span><span class="p">,</span><span class="n">local_baseline_list</span><span class="p">)</span> <span class="c1">#subtract localBaseline to avoid double counting</span>
+
+	<span class="n">similarityScore_list</span><span class="o">=</span><span class="p">[]</span>
+	<span class="n">temp</span><span class="o">=</span><span class="p">[]</span>
+
+	<span class="k">for</span> <span class="n">movie2_id</span> <span class="ow">in</span> <span class="n">non_zero_ratings_indices_array</span><span class="p">:</span>
+		<span class="n">score</span><span class="o">=</span><span class="n">movie_sim_matrix</span><span class="p">[</span><span class="n">movie2_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">]</span>
+		<span class="n">similarityScore_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+
+	<span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">similarityScore_list</span><span class="p">,</span><span class="n">non_zero_ratings</span><span class="p">))</span> 
+
+	<span class="n">key</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="c1">#key contains similarity scores</span>
+	<span class="n">key</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key</span><span class="p">]</span> <span class="c1">#values contain corresponding ratings</span>
+
+	<span class="c1">#Handling the case if neighbourhood size &gt; size of non-zero ratings list</span>
+	<span class="n">iter_len</span><span class="o">=</span><span class="n">neighbourhood_size</span>
+	<span class="k">if</span> <span class="n">iter_len</span><span class="o">&gt;</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+		<span class="n">iter_len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+	<span class="n">top_similarityScore_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iter_len</span><span class="p">)</span> <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">neighbourhoodRating_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iter_len</span><span class="p">)</span> <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+
+	<span class="c1">#Handling the case if there are NO nonzero similarity scores in the topN list</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">top_similarityScore_list</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">flag</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+		<span class="n">predictedRating</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rating_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,:])</span><span class="o">*</span><span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">rating_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,:])</span>
+		<span class="k">return</span> <span class="n">predictedRating</span> <span class="c1">#return user&#39;s average rating</span>
+	<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">top_similarityScore_list</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">flag</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+		<span class="k">return</span> <span class="mi">0</span> <span class="c1">#local estimate would be zero in baseline approach</span>
+
+	<span class="n">predictedRating</span> <span class="o">=</span> <span class="n">weighted_avg</span><span class="p">(</span><span class="n">top_similarityScore_list</span><span class="p">,</span> <span class="n">neighbourhoodRating_list</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">predictedRating</span></div>
+
+<div class="viewcode-block" id="predict_baseline_rating"><a class="viewcode-back" href="../index.html#prediction.predict_baseline_rating">[docs]</a><span class="k">def</span> <span class="nf">predict_baseline_rating</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="p">,</span> <span class="n">rating_matrix</span><span class="p">,</span><span class="n">movie_sim_matrix</span><span class="p">,</span><span class="n">baseline_matrix</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function will predict the rating according </span>
+<span class="sd">	to collaborative + baseline algorithm.</span>
+
+<span class="sd">	:param user_id: User ID for which rating has to be predicted</span>
+<span class="sd">	:param movie_id: Movie ID for which rating has to be predicted</span>
+<span class="sd">	:param rating_matrix: The utility matrix (User ID vs Movie ID)</span>
+<span class="sd">	:param movie_sim_matrix: Cached matrix containing similarity scores of all possible pairs of movies</span>
+<span class="sd">	:param baseline_matrix: matrix containing baseline estimates of all possible (User id, Movie id) pairs</span>
+
+<span class="sd">	:return: Predicted rating as per collaborative + baseline algorithm</span>
+
+<span class="sd">	&#39;&#39;&#39;</span>
+
+	<span class="n">global_baseline_estimate</span> <span class="o">=</span> <span class="n">baseline_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">]</span>
+	<span class="n">local_baseline_estimate</span> <span class="o">=</span> <span class="n">predict_rating</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">,</span><span class="n">rating_matrix</span><span class="p">,</span>
+											<span class="n">movie_sim_matrix</span><span class="p">,</span><span class="n">baseline_matrix</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+	<span class="n">combined_rating</span> <span class="o">=</span> <span class="n">global_baseline_estimate</span> <span class="o">+</span> <span class="n">local_baseline_estimate</span>
+
+	<span class="k">return</span> <span class="n">combined_rating</span></div>
+
+<div class="viewcode-block" id="load_sim_matrix"><a class="viewcode-back" href="../index.html#prediction.load_sim_matrix">[docs]</a><span class="k">def</span> <span class="nf">load_sim_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function will load the similarity matrix.</span>
+
+<span class="sd">	:param filepath: relative path to the file.</span>
+<span class="sd">	:param filename: name of the file to be the stored.</span>
+
+<span class="sd">	:return: Similarity matrix (loaded from .npz file)</span>
+
+
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">filename</span><span class="o">=</span><span class="n">filepath</span><span class="o">+</span><span class="n">filename</span>
+	<span class="n">loaded</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;movie_sim_matrix&#39;</span><span class="p">]</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+	<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;similarity_matrix.npz&#39;</span>
+	<span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;ml-1m/&#39;</span>
+	<span class="n">rating_matrix</span><span class="p">,</span><span class="n">validation_matrix</span> <span class="o">=</span> <span class="n">load_rating_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+	<span class="c1">#Loading/Creating the similarity matrix</span>
+	<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Loading the sim matrix&quot;</span><span class="p">)</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">movie_sim_matrix</span><span class="o">=</span><span class="n">load_sim_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;matrix loaded&quot;</span><span class="p">)</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;matrix not found, generating similarity_matrix&quot;</span><span class="p">)</span>
+		<span class="n">movie_sim_matrix</span> <span class="o">=</span> <span class="n">generate_similarity_matrix</span><span class="p">(</span><span class="n">rating_matrix</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;matrix generated and cached&quot;</span><span class="p">)</span>
+
+	<span class="c1"># print (&quot;Calculating the baseline matrix&quot;)</span>
+	<span class="c1"># baseline_matrix=find_baseline_matrix(rating_matrix)</span>
+	<span class="c1"># collab_predictedRating = predict_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix,0)</span>
+	<span class="c1"># baseline_predictedRating = predict_baseline_rating(0,1192,rating_matrix,movie_sim_matrix,baseline_matrix)</span>
+	<span class="c1"># print(collab_predictedRating)</span>
+	<span class="c1"># print(baseline_predictedRating)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">RecommenderSystem</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Yashdeep Thorat, Abhinav Kumar, Shivam Bhagat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

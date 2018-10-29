@@ -37,15 +37,18 @@
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">data_parser</span> <span class="k">import</span> <span class="n">load_rating_matrix</span>
+<span class="kn">from</span> <span class="nn">evaluation_collab</span> <span class="k">import</span> <span class="n">precision_on_top_k</span>
 
 <span class="c1">################### HELPER FUNCTIONS ###################</span>
-<div class="viewcode-block" id="SVD"><a class="viewcode-back" href="../index.html#svd.SVD">[docs]</a><span class="k">class</span> <span class="nc">SVD</span><span class="p">():</span>
+<div class="viewcode-block" id="SVD"><a class="viewcode-back" href="../index.html#svd.SVD">[docs]</a><span class="k">class</span> <span class="nc">SVD</span><span class="p">:</span>
+
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class will provide one place functionality for the</span>
 <span class="sd">    singular valued decoposition along with other functions for</span>
 <span class="sd">    making recommndation by projecting the query vector to</span>
 <span class="sd">    concept space.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
+
     <span class="c1">################# Member Variables #################</span>
     <span class="c1">#Training and Valdiation dataset</span>
     <span class="n">data_matrix</span><span class="o">=</span><span class="kc">None</span>
@@ -66,11 +69,11 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Here we will initialize the svd class by loading the data</span>
 <span class="sd">        and initializing other variables.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    : the path where the datamatrix is stored</span>
-<span class="sd">                mode        : load/normalize, normalize the data/rating</span>
-<span class="sd">                                matrix. if load just load the data matrix</span>
+
+<span class="sd">        :param filepath: the path where the datamatrix is stored</span>
+
+<span class="sd">        :param mode: load/normalize, normalize the data/rating</span>
+<span class="sd">        matrix. if load just load the data matrix</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Loading the data matrix into the memory</span>
         <span class="k">if</span> <span class="n">useMode</span> <span class="o">==</span> <span class="s1">&#39;CUR&#39;</span><span class="p">:</span>
@@ -98,11 +101,13 @@
 
 <div class="viewcode-block" id="SVD.normalize_dataset"><a class="viewcode-back" href="../index.html#svd.SVD.normalize_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mode</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        (THINK/TUNABLE)</span>
 <span class="sd">        This function will normalize the dataset to make the non rated</span>
 <span class="sd">        movies unbiased.(using the mean subtraction from rated movie)</span>
 <span class="sd">        Also, to counter the high and low raters problem we have to normalize</span>
 <span class="sd">        the rating vector of each user to bring their rating to same scale</span>
+
+<span class="sd">        :param mode: Indicates whether data matrix has to be normalized</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Casting the dataset to floating point precision from uint8</span>
         <span class="c1">#self.data_matrix=np.array([[3,2,2],[2,3,-2]])</span>
@@ -138,10 +143,9 @@
 <span class="sd">        This function will generate the eigen value decomposition</span>
 <span class="sd">        of the data matrix and store it as a member variable.</span>
 
-<span class="sd">        USAGE:</span>
-<span class="sd">            Call this function when using for the first time,</span>
-<span class="sd">            to create a SVD decomposition. This will automatically</span>
-<span class="sd">            update the U,Sigma,V member elemets of the SVD object.</span>
+<span class="sd">        Call this function when using for the first time,</span>
+<span class="sd">        to create a SVD decomposition. This will automatically</span>
+<span class="sd">        update the U,Sigma,V member elemets of the SVD object.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Getting the data matrix (keep it here for safety)</span>
         <span class="n">data_matrix</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -196,10 +200,9 @@
 <span class="sd">        decomposed component and also denormalize it to have</span>
 <span class="sd">        same mean and variance for each user.</span>
 <span class="sd">        (matching their rating style)</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                mode    : where we have to denormalize the reconstructed</span>
-<span class="sd">                            matrix usign the mean rating of the user</span>
+
+<span class="sd">        :param mode: where we have to denormalize the reconstructed matrix usign the mean rating of the user</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reconstructing the rating-matrix&quot;</span><span class="p">)</span>
         <span class="c1">#Reconstructing the rating matrix</span>
@@ -217,13 +220,13 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will be used for computation of the eigen value</span>
 <span class="sd">        and eigen vectors of a symmetric matrix.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                K       : a symmetric matrix</span>
-<span class="sd">            OUTPUT:</span>
-<span class="sd">                eval    : the eigen value vector in ascending order</span>
-<span class="sd">                evec    : the eigen vector matrix as a columns in same</span>
-<span class="sd">                            order as the eigen value.</span>
+
+<span class="sd">        :param K       : a symmetric matrix</span>
+
+<span class="sd">        :return eval    : the eigen value vector in ascending order</span>
+
+<span class="sd">        :return evec    : the eigen vector matrix as a columns in same order as the eigen value.</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="nb">eval</span><span class="p">,</span><span class="n">evec</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
 
@@ -245,9 +248,8 @@
 <span class="sd">        This fucntion will save the decomposition to the dataset</span>
 <span class="sd">        directory which can be used later without need to decomp</span>
 <span class="sd">        -osition again.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    :the filepath of the dataset directory</span>
+
+<span class="sd">        :param filepath    :the filepath of the dataset directory</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">+</span> <span class="n">filename</span>
         <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
@@ -263,9 +265,8 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will load the svd decompoased matrix to the</span>
 <span class="sd">        member varaibles of the SVD object.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    :the filepath of the dataset directory</span>
+
+<span class="sd">        :param filepath    :the filepath of the dataset directory</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Loading the dataset</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">+</span> <span class="n">filename</span>
@@ -315,17 +316,14 @@
 <span class="sd">        This function will make the prediction given the movieid and</span>
 <span class="sd">        the userid by projecting the movie into the concept space</span>
 <span class="sd">        and taking the cosine similarity of user personality</span>
-<span class="sd">        in the same-concept space</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                userid  : the userid for which we have to make</span>
-<span class="sd">                            recommendation.</span>
-<span class="sd">                movieid : the movie for which we have to make the</span>
-<span class="sd">                            prediction for the user.</span>
-<span class="sd">            OUPUT:</span>
-<span class="sd">                similarity : the cosine similarity of user and movie.</span>
-<span class="sd">                            rescale it to appropriate rating scale</span>
-<span class="sd">                            before calculating when using</span>
+<span class="sd">        in the same-concept space.</span>
+
+<span class="sd">        :param userid: the userid for which we have to make recommendation.</span>
+
+<span class="sd">        :param movieid: the movie for which we have to make the prediction for the user.</span>
+
+<span class="sd">        :return similarity: the cosine similarity of user and movie. Rescale it to appropriate rating scale before calculating when using</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Extracting the user-projection in concept space (eigen movie)</span>
         <span class="n">user_vector</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">U_matrix</span><span class="p">[</span><span class="n">userid</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
@@ -345,9 +343,9 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will calculate the root-mean squared error</span>
 <span class="sd">        of the reconstruction and the actual matrix.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            OUTPUT:</span>
-<span class="sd">                rmse_val    : the average root mean squared error.</span>
+
+<span class="sd">        :return rmse_val: the average root mean squared error.</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">non_zero_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_matrix</span><span class="o">!=</span><span class="mi">0</span>
         <span class="n">diff</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_matrix</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_matrix</span><span class="p">)</span><span class="o">*</span><span class="n">non_zero_mask</span>
@@ -365,16 +363,22 @@
 
         <span class="k">return</span> <span class="n">rmse_val</span></div>
 
-<div class="viewcode-block" id="SVD.get_validation_error_correlation"><a class="viewcode-back" href="../index.html#svd.SVD.get_validation_error_correlation">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_error_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SVD.get_validation_error_correlation"><a class="viewcode-back" href="../index.html#svd.SVD.get_validation_error_correlation">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_error_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will calculate the validation set error,</span>
 <span class="sd">        by comparing the prediction made by the reconstructed matrix</span>
 <span class="sd">        and the actal value</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            OUTPUT:</span>
-<span class="sd">                rmse_val    : the root mean squared error value.</span>
+
+<span class="sd">        :param good_threshold: the good threshold rating for the finding the relavant set.</span>
+
+<span class="sd">        :return rmse_val: the root mean squared error value.</span>
+
+<span class="sd">        :return spearman_coeff: the spearman coefficient of the error in the prediction.</span>
+
+<span class="sd">        :return precision: the precision on top k score</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">squared_diff</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">pred_list</span><span class="o">=</span><span class="p">[]</span>
 
         <span class="c1">#Iterating over the validation examples</span>
         <span class="n">N</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -386,6 +390,9 @@
             <span class="n">rating_diff</span> <span class="o">=</span>   <span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span>\
                         <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">],</span>
             <span class="n">rating_diff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rating_diff</span><span class="p">)</span>
+
+            <span class="c1">#Adding the predicted rating to the list</span>
+            <span class="n">pred_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">])</span>
 
             <span class="c1">#Printing for interactiveness</span>
             <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">100</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
@@ -404,13 +411,18 @@
         <span class="c1">#Finding the spearman correlation</span>
         <span class="n">spearman_coefficient</span><span class="o">=</span><span class="mi">1</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">squared_diff</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">rmse_val</span><span class="p">,</span><span class="n">spearman_coefficient</span></div></div>
+        <span class="c1">#Finding the precision on top k</span>
+        <span class="n">precision</span><span class="o">=</span><span class="n">precision_on_top_k</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="p">,</span>
+                                        <span class="n">pred_list</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rmse_val</span><span class="p">,</span><span class="n">spearman_coefficient</span><span class="p">,</span><span class="n">precision</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="c1">#Creating the svd object</span>
     <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;ml-1m/&#39;</span>
     <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;normalize&#39;</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;svd_decomposition.npz&#39;</span>
+    <span class="n">good_threshold</span><span class="o">=</span><span class="mi">3</span>
     <span class="n">svd</span><span class="o">=</span><span class="n">SVD</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="s1">&#39;svd&#39;</span><span class="p">)</span>
 
     <span class="c1">#Checking the size compatibility</span>
@@ -421,14 +433,14 @@
 
     <span class="c1">#Recosntructing the svd decomposition</span>
     <span class="n">svd</span><span class="o">.</span><span class="n">create_reconstruction</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">svd</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">(),</span><span class="s1">&#39;&lt;----vaidError&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">svd</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">(</span><span class="n">good_threshold</span><span class="p">),</span><span class="s1">&#39;&lt;----vaidError&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">svd</span><span class="o">.</span><span class="n">get_rmse_reconstruction_error</span><span class="p">(),</span><span class="s1">&#39;&lt;----trainError&#39;</span><span class="p">)</span>
 
 
     <span class="c1"># #Reconstruction with 90% eneergy left</span>
     <span class="n">svd</span><span class="o">.</span><span class="n">_set_90percent_energy_mode</span><span class="p">(</span><span class="n">keep_energy</span><span class="o">=</span><span class="mf">0.90</span><span class="p">)</span>
     <span class="n">svd</span><span class="o">.</span><span class="n">create_reconstruction</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vaid:&#39;</span><span class="p">,</span><span class="n">svd</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vaid:&#39;</span><span class="p">,</span><span class="n">svd</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">(</span><span class="n">good_threshold</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;recon:&#39;</span><span class="p">,</span><span class="n">svd</span><span class="o">.</span><span class="n">get_rmse_reconstruction_error</span><span class="p">())</span>
 </pre></div>
 

@@ -6,13 +6,15 @@ from data_parser import load_rating_matrix
 from evaluation_collab import precision_on_top_k
 
 ################### HELPER FUNCTIONS ###################
-class SVD():
+class SVD:
+
     '''
     This class will provide one place functionality for the
     singular valued decoposition along with other functions for
     making recommndation by projecting the query vector to
     concept space.
     '''
+
     ################# Member Variables #################
     #Training and Valdiation dataset
     data_matrix=None
@@ -33,11 +35,11 @@ class SVD():
         '''
         Here we will initialize the svd class by loading the data
         and initializing other variables.
-        USAGE:
-            INPUT:
-                filepath    : the path where the datamatrix is stored
-                mode        : load/normalize, normalize the data/rating
-                                matrix. if load just load the data matrix
+
+        :param filepath: the path where the datamatrix is stored
+
+        :param mode: load/normalize, normalize the data/rating
+        matrix. if load just load the data matrix
         '''
         #Loading the data matrix into the memory
         if useMode == 'CUR':
@@ -65,11 +67,13 @@ class SVD():
 
     def normalize_dataset(self,mode):
         '''
-        (THINK/TUNABLE)
         This function will normalize the dataset to make the non rated
         movies unbiased.(using the mean subtraction from rated movie)
         Also, to counter the high and low raters problem we have to normalize
         the rating vector of each user to bring their rating to same scale
+
+        :param mode: Indicates whether data matrix has to be normalized
+
         '''
         #Casting the dataset to floating point precision from uint8
         #self.data_matrix=np.array([[3,2,2],[2,3,-2]])
@@ -105,10 +109,9 @@ class SVD():
         This function will generate the eigen value decomposition
         of the data matrix and store it as a member variable.
 
-        USAGE:
-            Call this function when using for the first time,
-            to create a SVD decomposition. This will automatically
-            update the U,Sigma,V member elemets of the SVD object.
+        Call this function when using for the first time,
+        to create a SVD decomposition. This will automatically
+        update the U,Sigma,V member elemets of the SVD object.
         '''
         #Getting the data matrix (keep it here for safety)
         data_matrix=(self.data_matrix).astype(np.float64)
@@ -163,10 +166,9 @@ class SVD():
         decomposed component and also denormalize it to have
         same mean and variance for each user.
         (matching their rating style)
-        USAGE:
-            INPUT:
-                mode    : where we have to denormalize the reconstructed
-                            matrix usign the mean rating of the user
+
+        :param mode: where we have to denormalize the reconstructed matrix usign the mean rating of the user
+
         '''
         print("Reconstructing the rating-matrix")
         #Reconstructing the rating matrix
@@ -184,13 +186,13 @@ class SVD():
         '''
         This function will be used for computation of the eigen value
         and eigen vectors of a symmetric matrix.
-        USAGE:
-            INPUT:
-                K       : a symmetric matrix
-            OUTPUT:
-                eval    : the eigen value vector in ascending order
-                evec    : the eigen vector matrix as a columns in same
-                            order as the eigen value.
+
+        :param K       : a symmetric matrix
+
+        :return eval    : the eigen value vector in ascending order
+
+        :return evec    : the eigen vector matrix as a columns in same order as the eigen value.
+
         '''
         eval,evec=np.linalg.eigh(K)
 
@@ -212,9 +214,8 @@ class SVD():
         This fucntion will save the decomposition to the dataset
         directory which can be used later without need to decomp
         -osition again.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
+
+        :param filepath    :the filepath of the dataset directory
         '''
         filename = filepath + filename
         np.savez_compressed(filename,
@@ -230,9 +231,8 @@ class SVD():
         '''
         This function will load the svd decompoased matrix to the
         member varaibles of the SVD object.
-        USAGE:
-            INPUT:
-                filepath    :the filepath of the dataset directory
+
+        :param filepath    :the filepath of the dataset directory
         '''
         #Loading the dataset
         filename = filepath + filename
@@ -282,17 +282,14 @@ class SVD():
         This function will make the prediction given the movieid and
         the userid by projecting the movie into the concept space
         and taking the cosine similarity of user personality
-        in the same-concept space
-        USAGE:
-            INPUT:
-                userid  : the userid for which we have to make
-                            recommendation.
-                movieid : the movie for which we have to make the
-                            prediction for the user.
-            OUPUT:
-                similarity : the cosine similarity of user and movie.
-                            rescale it to appropriate rating scale
-                            before calculating when using
+        in the same-concept space.
+
+        :param userid: the userid for which we have to make recommendation.
+
+        :param movieid: the movie for which we have to make the prediction for the user.
+
+        :return similarity: the cosine similarity of user and movie. Rescale it to appropriate rating scale before calculating when using
+
         '''
         #Extracting the user-projection in concept space (eigen movie)
         user_vector=self.U_matrix[userid-1,:]
@@ -312,9 +309,9 @@ class SVD():
         '''
         This function will calculate the root-mean squared error
         of the reconstruction and the actual matrix.
-        USAGE:
-            OUTPUT:
-                rmse_val    : the average root mean squared error.
+
+        :return rmse_val: the average root mean squared error.
+
         '''
         non_zero_mask=self.data_matrix!=0
         diff=(self.data_matrix-self.reconstructed_matrix)*non_zero_mask
@@ -337,15 +334,14 @@ class SVD():
         This function will calculate the validation set error,
         by comparing the prediction made by the reconstructed matrix
         and the actal value
-        USAGE:
-            INPUT:
-                good_threshold : the good threshold rating for the
-                                finding the relavant set.
-            OUTPUT:
-                rmse_val    : the root mean squared error value.
-                spearman_coeff: the spearman coefficient of the
-                                error in the prediction.
-                precision   : the precision on top k score
+
+        :param good_threshold: the good threshold rating for the finding the relavant set.
+
+        :return rmse_val: the root mean squared error value.
+
+        :return spearman_coeff: the spearman coefficient of the error in the prediction.
+
+        :return precision: the precision on top k score
         '''
         squared_diff=0
         pred_list=[]

@@ -35,13 +35,15 @@
 <span></span><span class="c1">#################### IMPORTING LIBRARIES ################</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">from</span> <span class="nn">svd</span> <span class="k">import</span> <span class="n">SVD</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">data_parser</span> <span class="k">import</span> <span class="n">load_rating_matrix</span>
+<span class="kn">from</span> <span class="nn">evaluation_collab</span> <span class="k">import</span> <span class="n">precision_on_top_k</span>
 
 <span class="c1">################### HELPER FUNCTIONS ###################</span>
-<div class="viewcode-block" id="CUR"><a class="viewcode-back" href="../index.html#CUR.CUR">[docs]</a><span class="k">class</span> <span class="nc">CUR</span><span class="p">():</span>
+<div class="viewcode-block" id="CUR"><a class="viewcode-back" href="../index.html#CUR.CUR">[docs]</a><span class="k">class</span> <span class="nc">CUR</span><span class="p">:</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class will provide one place functionality for the</span>
 <span class="sd">    CUR decoposition along with other functions for</span>
@@ -65,9 +67,11 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Here we will initialize the CUR class by loading the data</span>
 <span class="sd">        and initializing other variables.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    : the path where the datamatrix is stored</span>
+
+<span class="sd">        :param filepath: the path where the datamatrix is stored</span>
+
+<span class="sd">        :param mode: to decide if mode is 90% Energy</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_matrix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="o">=</span><span class="n">load_rating_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 
@@ -89,11 +93,13 @@
 
 <div class="viewcode-block" id="CUR.normalize_dataset"><a class="viewcode-back" href="../index.html#CUR.CUR.normalize_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mode</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        (THINK/TUNABLE)</span>
 <span class="sd">        This function will normalize the dataset to make the non rated</span>
 <span class="sd">        movies unbiased.(using the mean subtraction from rated movie)</span>
 <span class="sd">        Also, to counter the high and low raters problem we have to normalize</span>
 <span class="sd">        the rating vector of each user to bring their rating to same scale</span>
+
+<span class="sd">        :param mode: Indicates whether data matrix has to be normalized</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Casting the dataset to floating point precision from uint8</span>
         <span class="c1">#self.data_matrix=np.array([[3,2,2],[2,3,-2]])</span>
@@ -129,10 +135,9 @@
 <span class="sd">        This function will generate the C, U and R matrices by</span>
 <span class="sd">        selecting Columns and rows based on the probabilities</span>
 
-<span class="sd">        USAGE:</span>
-<span class="sd">            Call this function when using for the first time,</span>
-<span class="sd">            to create a CUD decomposition. This will automatically</span>
-<span class="sd">            update the C,U,R member elemets of the CUR object.</span>
+<span class="sd">        Call this function when using for the first time,</span>
+<span class="sd">        to create a CUD decomposition. This will automatically</span>
+<span class="sd">        update the C,U,R member elemets of the CUR object.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Getting the data matrix</span>
         <span class="n">data_matrix</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -143,7 +148,7 @@
         <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">ColumnProb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">[:,</span><span class="n">c</span><span class="p">]))</span><span class="o">/</span><span class="n">denominator</span><span class="p">)</span>
-        <span class="n">chosenColumns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ColumnProb</span><span class="p">)</span>
+        <span class="n">chosenColumns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ColumnProb</span><span class="p">)</span>
 
         <span class="n">C_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">chosenColumns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chosenColumns</span><span class="p">):</span>
@@ -152,7 +157,7 @@
         <span class="n">RowProb</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">RowProb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">[</span><span class="n">r</span><span class="p">,:]))</span><span class="o">/</span><span class="n">denominator</span><span class="p">)</span>
-        <span class="n">chosenRows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">RowProb</span><span class="p">)</span>
+        <span class="n">chosenRows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">0.9</span><span class="o">*</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">RowProb</span><span class="p">)</span>
 
         <span class="n">R_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">chosenRows</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chosenRows</span><span class="p">):</span>
@@ -188,14 +193,14 @@
         <span class="n">rmse_val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">rmse_val</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_save_cur_decomposition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_save_cur_decomposition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This fucntion will save the decomposition to the dataset</span>
 <span class="sd">        directory which can be used later without need to decomp</span>
 <span class="sd">        -osition again.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    :the filepath of the dataset directory</span>
+
+<span class="sd">        :param filepath: the filepath of the dataset directory</span>
+
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s1">&#39;CUR_decomposition.npz&#39;</span>
         <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
@@ -210,9 +215,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will load the svd decompoased matrix to the</span>
 <span class="sd">        member varaibles of the SVD object.</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            INPUT:</span>
-<span class="sd">                filepath    :the filepath of the dataset directory</span>
+<span class="sd">        :param filepath    :the filepath of the dataset directory</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1">#Loading the dataset</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s1">&#39;CUR_decomposition.npz&#39;</span>
@@ -232,16 +235,15 @@
         <span class="n">rmse_val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">rmse_val</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CUR.get_validation_error_correlation"><a class="viewcode-back" href="../index.html#CUR.CUR.get_validation_error_correlation">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_error_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CUR.get_validation_error_correlation"><a class="viewcode-back" href="../index.html#CUR.CUR.get_validation_error_correlation">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_error_correlation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function will calculate the validation set error,</span>
 <span class="sd">        by comparing the prediction made by the reconstructed matrix</span>
 <span class="sd">        and the actal value</span>
-<span class="sd">        USAGE:</span>
-<span class="sd">            OUTPUT:</span>
-<span class="sd">                rmse_val    : the root mean squared error value.</span>
+<span class="sd">        :return rmse_val    : the root mean squared error value.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">squared_diff</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">predict_list</span><span class="o">=</span><span class="p">[]</span>
 
         <span class="c1">#Iterating over the validation examples</span>
         <span class="n">N</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -253,6 +255,9 @@
             <span class="n">rating_diff</span> <span class="o">=</span>   <span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span>\
                         <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">],</span>
             <span class="n">rating_diff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rating_diff</span><span class="p">)</span>
+
+            <span class="c1">#Adding the prediction to list</span>
+            <span class="n">predict_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_matrix</span><span class="p">[</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">])</span>
 
             <span class="c1">#Printing for interactiveness</span>
             <span class="c1"># if i%100==0:</span>
@@ -271,17 +276,27 @@
         <span class="c1">#Finding the spearman correlation</span>
         <span class="n">spearman_coefficient</span><span class="o">=</span><span class="mi">1</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">squared_diff</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">rmse_val</span><span class="p">,</span><span class="n">spearman_coefficient</span></div></div>
+        <span class="c1">#Finding out the precision on top k</span>
+        <span class="n">precision</span><span class="o">=</span><span class="n">precision_on_top_k</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validation_matrix</span><span class="p">,</span>
+                                    <span class="n">predict_list</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rmse_val</span><span class="p">,</span><span class="n">spearman_coefficient</span><span class="p">,</span><span class="n">precision</span></div></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;ml-1m/&#39;</span>
     <span class="n">cur</span><span class="o">=</span><span class="n">CUR</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">())</span>
+    <span class="n">t1</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">(</span><span class="n">good_threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">t2</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">90</span><span class="si">% E</span><span class="s1">nergy: </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">cur</span><span class="o">=</span><span class="n">CUR</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;90-percent&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">())</span>
+    <span class="n">t1</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_validation_error_correlation</span><span class="p">(</span><span class="n">good_threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">t2</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">)</span>
 </pre></div>
 
           </div>

@@ -1,0 +1,270 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>evaluation_collab &#8212; RecommenderSystem 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for evaluation_collab</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">data_parser</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">spatial</span>
+<span class="kn">from</span> <span class="nn">array</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">prediction</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="precision_on_top_k"><a class="viewcode-back" href="../index.html#evaluation_collab.precision_on_top_k">[docs]</a><span class="k">def</span> <span class="nf">precision_on_top_k</span><span class="p">(</span><span class="n">validation_matrix</span><span class="p">,</span><span class="n">pred_list</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function will calculate the precision on the top k elements</span>
+<span class="sd">	for each user and then take the average among all of them.</span>
+
+<span class="sd">	:param validation_matrix: the validation matrix containing</span>
+<span class="sd">								the user id, movie id and actual rating</span>
+<span class="sd">	:param pred_list: the prediction made by the collaborative</span>
+<span class="sd">					   	recommender system (in same sequence as</span>
+<span class="sd">						validation data)</span>
+<span class="sd">	:param good_threshold: the threshold of the rating which we will</span>
+<span class="sd">					use to make the relevant document set.</span>
+
+<span class="sd">	:return precision: the mean precision value of each user</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1">#Grouping the prediction by the users</span>
+	<span class="n">user_dict</span><span class="o">=</span><span class="p">{}</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">validation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+		<span class="c1">#retreiving the actual data</span>
+		<span class="n">user_id</span><span class="o">=</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">movie_id</span><span class="o">=</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">actual_rating</span><span class="o">=</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+		<span class="n">predict_rating</span><span class="o">=</span><span class="n">pred_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+		<span class="c1">#Actual Tuple</span>
+		<span class="n">actual_tuple</span><span class="o">=</span><span class="p">(</span><span class="n">movie_id</span><span class="p">,</span><span class="n">actual_rating</span><span class="p">)</span>
+		<span class="c1">#Prediction Tuple</span>
+		<span class="n">pred_tuple</span><span class="o">=</span><span class="p">(</span><span class="n">movie_id</span><span class="p">,</span><span class="n">predict_rating</span><span class="p">)</span>
+
+		<span class="c1">#Creating or appending the actual and prediction in user dict</span>
+
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">user_dict</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">actual_tuple</span><span class="p">)</span>
+			<span class="n">user_dict</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_tuple</span><span class="p">)</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="n">user_dict</span><span class="p">[</span><span class="n">user_id</span><span class="p">]</span><span class="o">=</span><span class="p">[[</span><span class="n">actual_tuple</span><span class="p">],[</span><span class="n">pred_tuple</span><span class="p">]]</span>
+
+
+	<span class="c1">#Calculating the precision for each user</span>
+	<span class="n">overall_precision</span><span class="o">=</span><span class="mf">0.0</span>
+	<span class="n">count</span><span class="o">=</span><span class="mi">0</span>
+	<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">user_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+		<span class="c1">#Getting the relevant list of each user</span>
+		<span class="n">actual_list</span><span class="o">=</span><span class="n">user_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">predict_list</span><span class="o">=</span><span class="n">user_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+		<span class="c1">#Calculating the precision score</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">precision</span><span class="o">=</span><span class="n">_calculate_user_precision</span><span class="p">(</span><span class="n">actual_list</span><span class="p">,</span><span class="n">predict_list</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">)</span>
+			<span class="c1">#print (&quot;precision for user:{} is:{}&quot;.format(key,precision))</span>
+
+			<span class="n">overall_precision</span><span class="o">+=</span><span class="n">precision</span>
+			<span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="o">+</span><span class="mi">1</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">continue</span>
+
+	<span class="c1">#Calcualting the final precision</span>
+	<span class="n">overall_precision</span><span class="o">=</span><span class="n">overall_precision</span><span class="o">/</span><span class="n">count</span>
+
+	<span class="k">return</span> <span class="n">overall_precision</span></div>
+
+<span class="k">def</span> <span class="nf">_calculate_user_precision</span><span class="p">(</span><span class="n">actual_list</span><span class="p">,</span><span class="n">predict_list</span><span class="p">,</span><span class="n">good_threshold</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function will be interanally by the precision calculation function</span>
+<span class="sd">	for getting the precision for one user.</span>
+
+<span class="sd">	:param actual_list: the list of tuple of movieid and actual rating</span>
+<span class="sd">	:param predcit_list: the list of tuple of the movieid and the prediction</span>
+<span class="sd">	:param good_threshold: this has the same meaning as in the caller function</span>
+
+<span class="sd">	:return precision: the precision for one user</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1">#Creating the relevant list</span>
+	<span class="c1">#print(actual_list)</span>
+	<span class="n">relevant_list</span><span class="o">=</span><span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">actual_list</span> <span class="k">if</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;=</span><span class="n">good_threshold</span><span class="p">]</span>
+	<span class="n">relevant_movie_set</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">relevant_list</span><span class="p">])</span>
+	<span class="n">k_value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">relevant_list</span><span class="p">)</span>
+
+	<span class="c1">#Getting the sorted top K prediciton</span>
+	<span class="n">srtd_predict_list</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">predict_list</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="c1">#Sort by rating</span>
+	<span class="n">topk_prediction</span><span class="o">=</span><span class="n">srtd_predict_list</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">k_value</span><span class="p">]</span>
+	<span class="n">pred_movie_set</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">topk_prediction</span><span class="p">])</span>
+
+	<span class="c1">#Calculating the common movies in prediciton and relevant</span>
+	<span class="n">common_movie</span><span class="o">=</span><span class="n">relevant_movie_set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">pred_movie_set</span><span class="p">)</span>
+
+	<span class="c1">#Calculating the precision</span>
+	<span class="n">precision</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">common_movie</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span><span class="o">/</span><span class="n">k_value</span>
+	<span class="k">return</span> <span class="n">precision</span>
+
+<div class="viewcode-block" id="RMSE"><a class="viewcode-back" href="../index.html#evaluation_collab.RMSE">[docs]</a><span class="k">def</span> <span class="nf">RMSE</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">,</span> <span class="n">actual_rating</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function computes the RMSE error, given the actual rating &amp; predicted rating lists</span>
+
+<span class="sd">	:param predited_rating: list of Predicted ratings</span>
+<span class="sd">	:param actual_rating: list of Actual ratings</span>
+
+<span class="sd">	:return RMSEerror: RMSE error value</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_rating</span><span class="p">)</span>
+	<span class="n">predited_rating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">)</span>
+	<span class="n">actual_rating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">actual_rating</span><span class="p">)</span>
+
+	<span class="n">squared_deviation_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">,</span><span class="n">actual_rating</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span><span class="o">/</span><span class="n">N</span>
+	<span class="n">RMSEerror</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">squared_deviation_mean</span><span class="p">),</span><span class="mf">0.5</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">RMSEerror</span></div>
+
+<div class="viewcode-block" id="Spearman_correlation"><a class="viewcode-back" href="../index.html#evaluation_collab.Spearman_correlation">[docs]</a><span class="k">def</span> <span class="nf">Spearman_correlation</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">,</span> <span class="n">actual_rating</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function computes the Spearman correlation co-efficient, given the actual rating &amp; predicted rating lists</span>
+
+<span class="sd">	:param predited_rating: list of Predicted ratings</span>
+<span class="sd">	:param actual_rating: list of Actual ratings</span>
+
+<span class="sd">	:return spearman_coeff: Spearman correlation co-efficient</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_rating</span><span class="p">)</span>
+	<span class="n">predited_rating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">)</span>
+	<span class="n">actual_rating</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">actual_rating</span><span class="p">)</span>
+	<span class="n">squared_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predited_rating</span><span class="p">,</span><span class="n">actual_rating</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">spearman_coeff</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">6.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">squared_deviation</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+	<span class="k">return</span> <span class="n">spearman_coeff</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+	<span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;ml-1m/&#39;</span>
+	<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;similarity_matrix.npz&#39;</span>
+	<span class="n">rating_matrix</span><span class="p">,</span><span class="n">validation_matrix</span> <span class="o">=</span> <span class="n">load_rating_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+	<span class="n">movie_sim_matrix</span> <span class="o">=</span> <span class="n">load_sim_matrix</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+	<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Calculating the baseline matrix&quot;</span><span class="p">)</span>
+	<span class="n">baseline_matrix</span><span class="o">=</span><span class="n">find_baseline_matrix</span><span class="p">(</span><span class="n">rating_matrix</span><span class="p">)</span>
+
+	<span class="n">collab_predicted_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">collab_baseline_predicted_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">actual_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+	<span class="n">N</span> <span class="o">=</span> <span class="n">validation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="c1">#start1 = time.time()</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+		<span class="c1">#Taking out the validation data</span>
+		<span class="n">user_id</span> <span class="o">=</span> <span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">movie_id</span> <span class="o">=</span> <span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">actual_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+
+		<span class="c1">#Making the Prediction</span>
+
+		<span class="n">collab_prediction</span> <span class="o">=</span> <span class="n">predict_rating</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">movie_id</span><span class="p">,</span><span class="n">rating_matrix</span><span class="p">,</span><span class="n">movie_sim_matrix</span><span class="p">,</span><span class="n">baseline_matrix</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+
+
+		<span class="n">collab_baseline_prediction</span> <span class="o">=</span> <span class="n">predict_baseline_rating</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span><span class="n">movie_id</span><span class="p">,</span><span class="n">rating_matrix</span><span class="p">,</span><span class="n">movie_sim_matrix</span><span class="p">,</span><span class="n">baseline_matrix</span><span class="p">)</span>
+
+		<span class="nb">print</span><span class="p">(</span><span class="n">validation_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span><span class="n">collab_prediction</span><span class="p">,</span><span class="n">collab_baseline_prediction</span><span class="p">)</span>
+
+		<span class="c1">#Saving them to the list of results</span>
+		<span class="n">collab_predicted_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">collab_prediction</span><span class="p">)</span>
+		<span class="n">collab_baseline_predicted_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">collab_baseline_prediction</span><span class="p">)</span>
+
+	<span class="c1">#print &quot;Time taken for 1 collaborative prediction&quot;, time_collab</span>
+	<span class="c1">#print &quot;Time taken for 1 collaborative+baseline prediction&quot;, time_collab</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMSE for collaborative: &quot;</span><span class="p">,</span><span class="n">RMSE</span><span class="p">(</span><span class="n">collab_predicted_list</span><span class="p">,</span><span class="n">actual_list</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMSE for collaborative+baseline: &quot;</span><span class="p">,</span><span class="n">RMSE</span><span class="p">(</span><span class="n">collab_baseline_predicted_list</span><span class="p">,</span><span class="n">actual_list</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Spearman correlation for collaborative: &quot;</span><span class="p">,</span><span class="n">Spearman_correlation</span><span class="p">(</span><span class="n">collab_predicted_list</span><span class="p">,</span><span class="n">actual_list</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Spearman correlation for collaborative+baseline&quot;</span><span class="p">,</span><span class="n">Spearman_correlation</span><span class="p">(</span><span class="n">collab_baseline_predicted_list</span><span class="p">,</span><span class="n">actual_list</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Precision on top K for collaborative: &quot;</span><span class="p">,</span><span class="n">precision_on_top_k</span><span class="p">(</span><span class="n">validation_matrix</span><span class="p">,</span><span class="n">collab_predicted_list</span><span class="p">,</span><span class="mf">3.0</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Precision on top K for collaborative+baseline: &quot;</span><span class="p">,</span><span class="n">precision_on_top_k</span><span class="p">(</span><span class="n">validation_matrix</span><span class="p">,</span><span class="n">collab_baseline_predicted_list</span><span class="p">,</span><span class="mf">3.0</span><span class="p">))</span>
+	<span class="c1">#end1 = time.time()</span>
+	<span class="c1">#duration = end1-start1</span>
+	<span class="c1">#time_collab = duration</span>
+	<span class="c1">#print &quot;Time taken for 1 collaborative+baseline prediction&quot;, time_collab</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">RecommenderSystem</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Yashdeep Thorat, Abhinav Kumar, Shivam Bhagat.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

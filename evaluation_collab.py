@@ -10,7 +10,7 @@ def precision_on_top_k(validation_matrix,pred_list,good_threshold):
 	'''
 	This function will calculate the precision on the top k elements
 	for each user and then take the average among all of them.
-	
+
 	:param validation_matrix: the validation matrix containing
 								the user id, movie id and actual rating
 	:param pred_list: the prediction made by the collaborative
@@ -18,7 +18,7 @@ def precision_on_top_k(validation_matrix,pred_list,good_threshold):
 						validation data)
 	:param good_threshold: the threshold of the rating which we will
 					use to make the relevant document set.
-	
+
 	:return precision: the mean precision value of each user
 	'''
 	#Grouping the prediction by the users
@@ -71,11 +71,11 @@ def _calculate_user_precision(actual_list,predict_list,good_threshold):
 	'''
 	This function will be interanally by the precision calculation function
 	for getting the precision for one user.
-	
+
 	:param actual_list: the list of tuple of movieid and actual rating
 	:param predcit_list: the list of tuple of the movieid and the prediction
 	:param good_threshold: this has the same meaning as in the caller function
-		
+
 	:return precision: the precision for one user
 	'''
 	#Creating the relevant list
@@ -152,26 +152,26 @@ if __name__=='__main__':
 		actual_list.append(validation_matrix[i,2])
 
 		#Making the Prediction
-		
+
 		collab_prediction = predict_rating(user_id, movie_id,rating_matrix,movie_sim_matrix,baseline_matrix,0)
-	
-		
+
+
 		collab_baseline_prediction = predict_baseline_rating(user_id,movie_id,rating_matrix,movie_sim_matrix,baseline_matrix)
-		
+
 		print(validation_matrix[i,2],collab_prediction,collab_baseline_prediction)
 
 		#Saving them to the list of results
 		collab_predicted_list.append(collab_prediction)
 		collab_baseline_predicted_list.append(collab_baseline_prediction)
-	
+
 	#print "Time taken for 1 collaborative prediction", time_collab
 	#print "Time taken for 1 collaborative+baseline prediction", time_collab
-	print "RMSE for collaborative: ",RMSE(collab_predicted_list,actual_list)
-	print "RMSE for collaborative+baseline: ",RMSE(collab_baseline_predicted_list,actual_list)
-	print "Spearman correlation for collaborative: ",Spearman_correlation(collab_predicted_list,actual_list)
-	print "Spearman correlation for collaborative+baseline",Spearman_correlation(collab_baseline_predicted_list,actual_list)
-	print "Precision on top K for collaborative: ",precision_on_top_k(validation_matrix,collab_predicted_list,3.0)
-	print "Precision on top K for collaborative+baseline: ",precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0)
+	print("RMSE for collaborative: ",RMSE(collab_predicted_list,actual_list))
+	print("RMSE for collaborative+baseline: ",RMSE(collab_baseline_predicted_list,actual_list))
+	print("Spearman correlation for collaborative: ",Spearman_correlation(collab_predicted_list,actual_list))
+	print("Spearman correlation for collaborative+baseline",Spearman_correlation(collab_baseline_predicted_list,actual_list))
+	print("Precision on top K for collaborative: ",precision_on_top_k(validation_matrix,collab_predicted_list,3.0))
+	print("Precision on top K for collaborative+baseline: ",precision_on_top_k(validation_matrix,collab_baseline_predicted_list,3.0))
 	#end1 = time.time()
 	#duration = end1-start1
 	#time_collab = duration

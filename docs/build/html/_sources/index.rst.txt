@@ -3,32 +3,80 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to RecommenderSystem's documentation!
-=============================================
+Recommender System Documentation
+*********************************
+
+Usage Information
+=================
+
+PART 0: DATA PARSING
+
+    1. First of all we have to generate the dataset in the required
+        numpy format from the raw files.
+
+    2. Run python data_parser.py
+
+    3. This will create a numpy array of the dataset and store them
+        in the dataset directory for firthur processing.
+
+PART 1: Collaborative Filtering
+
+    1. To first generate the similarity matrix and cache it, run:
+    	python prediction.py
+
+    2. Then, to make the predictions and compute errors, run:
+    	python evaluation_collab.py
+
+PART 2: SVD DECOMPOSITION
+
+    1. Simply run the following script
+        python svd.py
+
+    2.This will automatically load the dataset and will load the
+        decomposition is already saved locally. Otherwise it will first
+        create the decomposition and then automatically save them
+        locally on the dataset directory.
+
+PART 3: CUR DECOMPOSITION
+
+    1. Simply run the following script
+        python CUR.py
+
+    2.This will automatically load the dataset and will load the
+        decomposition is already saved locally. Otherwise it will first
+        create the decomposition and then automatically save them
+        locally on the dataset directory.
 
 Documentation for the Code
-**************************
+***************************
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Table of Contents:
 
-RecommenderSystem Collaborative
-===================
-.. automodule:: collaborative
-   :members:
+Recommender System Collaborative
+==================================
+1. collaborative.py
+    .. automodule:: collaborative
+       :members:
+2. evaluation_collab.py
+    .. automodule:: evaluation_collab
+      :members:
+3. prediction.py
+    .. automodule:: prediction
+     :members:
 
-RecommenderSystem SVD
-=====================
+Recommender System SVD
+========================
 .. automodule:: svd
    :members:
 
-RecommenderSystem CUR
-=====================
+Recommender System CUR
+========================
 .. automodule:: CUR
   :members:
 
 Indices and tables
-==================
+====================
 
 * :ref:`genindex`
 * :ref:`modindex`
