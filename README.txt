@@ -1,8 +1,9 @@
 GROUP MEMBERS:
 
-1. Yashdeep Thorat      2015B5A70675H
-2. Abhinav Kumar        2015B5A70674H
-3. Shivam Bhagat        2015B5A70460H
+1. Shivam Bhagat        2015B5A70460H
+2. Yashdeep Thorat      2015B5A70675H
+3. Abhinav Kumar        2015B5A70674H
+
 
 
 USAGE INSTRUCTION:
